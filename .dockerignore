@@ -1,0 +1,14 @@
+# Ignore dependencies and build output
+node_modules
+.next
+
+# Ignore logs and system files
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+*.swp
+.DS_Store
+
+# Optional: ignore env files for security (add only if you don’t need them in image)
+.env
+.env.local
