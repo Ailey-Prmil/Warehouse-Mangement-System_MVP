@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrder ( -- Customize for Warehouse usage
     -- Add Shipment ID
     CustomerOrderID INT PRIMARY KEY,
     OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status ENUM('Pending', 'Pick and Pack', 'Shipped') NOT NULL DEFAULT 'Pending',
     Address VARCHAR(100)
 );
 
@@ -45,12 +46,14 @@ CREATE TABLE IF NOT EXISTS Stock (
 
 CREATE TABLE IF NOT EXISTS StockTransaction (
     TransactionID INT PRIMARY KEY AUTO_INCREMENT,
-    StockID INT NOT NULL,
+    ProductID INT NOT NULL,
+    LocID INT NOT NULL,
     TransactionType ENUM('Store', 'Pick', 'Remove') NOT NULL,
     RefID INT, -- Can be PickListID or InspectID? CHECK WITH TRIGGER? -- trigger: Store + , Others -
     Quantity INT NOT NULL CHECK (Quantity > 0),
     TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (StockID) REFERENCES Stock(StockID) ON DELETE CASCADE
+    FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE,
+    FOREIGN KEY (LocID) REFERENCES LocationBin(LocID) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS Inspection (
@@ -129,31 +132,30 @@ CREATE TRIGGER AutomateStockQuantity BEFORE INSERT ON StockTransaction
     FOR EACH ROW
     BEGIN
         -- DECLARE AND ASSIGN VARIABLES
-        DECLARE Loc, Product INT;
         DECLARE AvailableSpace, CurrentStock INT;
-        SELECT LocID, ProductID INTO Loc, Product
-            FROM Stock WHERE Stock.StockID = NEW.StockID;
+
         IF NEW.TransactionType = "Store"
         THEN
             -- GET FREE SPACE FROM LOCBIN
 
-            SELECT (LocationBin.Capacity - StockAggregation.Sum)
+            SELECT (LocationBin.Capacity - COALESCE(StockAggregation.Sum,0))
             INTO AvailableSpace
-            FROM LocationBin,
-                 (SELECT LocID, SUM(Quantity) AS Sum
-                  FROM Stock
-                  GROUP BY LocID) StockAggregation
-            WHERE
-                LocationBin.LocID = StockAggregation.LocID
-              AND
-                LocationBin.LocID = Loc;
+            FROM LocationBin
+            LEFT JOIN (
+                SELECT LocID, SUM(Quantity) AS Sum
+                FROM Stock
+                GROUP BY LocID
+            ) StockAggregation
+            ON LocationBin.LocID = StockAggregation.LocID
+            WHERE LocationBin.LocID = NEW.LocID;
 
             -- UPDATE THE STOCK OR SIGNAL ERROR
             IF AvailableSpace >= NEW.Quantity
             THEN
-                UPDATE Stock
-                SET Quantity = Quantity + NEW.Quantity
-                WHERE StockID = NEW.StockID;
+                INSERT INTO Stock (LocID, ProductID, Quantity)
+                VALUES (NEW.LocID, NEW.ProductID, NEW.Quantity)
+                ON DUPLICATE KEY UPDATE Quantity = Quantity + NEW.Quantity;
+                -- INSERT INTO StockTransaction
             ELSE
                 SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'There is no available space in this location';
@@ -163,32 +165,18 @@ CREATE TRIGGER AutomateStockQuantity BEFORE INSERT ON StockTransaction
             SELECT Quantity
             INTO CurrentStock
             FROM Stock
-            WHERE Stock.StockID = NEW.StockID;
+            WHERE Stock.LocID = NEW.LocID
+                AND Stock.ProductID = NEW.ProductID;
 
             IF CurrentStock >= NEW.Quantity
             THEN
                 UPDATE Stock
                 SET Quantity = Quantity - new.Quantity
-                WHERE Stock.StockID = NEW.StockID;
+                WHERE LocID = NEW.LocID
+                    AND ProductID = NEW.ProductID;
             ELSE
                 SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'The stock is not enough for this transaction';
                 END IF;
         END IF;
     END ||
-
-CREATE PROCEDURE AlertInboundDiscrepancies ()
-BEGIN
-    SELECT PurchaseOrder.PO_ID, PurchaseOrderDetail.ProductID, OrderedQuantity, ReceivedQuantity, (OrderedQuantity - ReceivedQuantity) AS Discrepancy
-    FROM PurchaseOrderDetail
-    JOIN PurchaseOrder
-        ON PurchaseOrderDetail.PO_ID = PurchaseOrder.PO_ID
-    JOIN ASN
-        ON PurchaseOrder.ASNID = ASN.ASNID
-    JOIN InboundShipment
-        ON ASN.ShipID = InboundShipment.ShipID
-    JOIN InboundShipmentDetail
-        ON InboundShipment.ShipID = InboundShipmentDetail.ShipID
-        AND InboundShipmentDetail.ProductID = PurchaseOrderDetail.ProductID;
-
-END ||
