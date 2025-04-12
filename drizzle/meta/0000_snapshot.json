@@ -1,0 +1,1096 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "5",
+  "dialect": "mysql",
+  "tables": {
+    "CustomerOrder": {
+      "name": "CustomerOrder",
+      "columns": {
+        "CustomerOrderID": {
+          "autoincrement": false,
+          "name": "CustomerOrderID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "OrderDate": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "OrderDate",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Status": {
+          "default": "'Pending'",
+          "autoincrement": false,
+          "name": "Status",
+          "type": "enum('Pending','Pick and Pack','Shipped')",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Address": {
+          "autoincrement": false,
+          "name": "Address",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "CustomerOrder_CustomerOrderID": {
+          "name": "CustomerOrder_CustomerOrderID",
+          "columns": [
+            "CustomerOrderID"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "CustomerOrderDetail": {
+      "name": "CustomerOrderDetail",
+      "columns": {
+        "OrderDetailID": {
+          "autoincrement": true,
+          "name": "OrderDetailID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "CustomerOrderID": {
+          "autoincrement": false,
+          "name": "CustomerOrderID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ProductID": {
+          "autoincrement": false,
+          "name": "ProductID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Quantity": {
+          "autoincrement": false,
+          "name": "Quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "CustomerOrderDetail_OrderDetailID": {
+          "name": "CustomerOrderDetail_OrderDetailID",
+          "columns": [
+            "OrderDetailID"
+          ]
+        }
+      },
+      "indexes": {
+        "CustomerOrderID": {
+          "name": "CustomerOrderID",
+          "columns": [
+            "CustomerOrderID"
+          ],
+          "isUnique": false
+        },
+        "ProductID": {
+          "name": "ProductID",
+          "columns": [
+            "ProductID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "CustomerOrderDetail_ibfk_1": {
+          "name": "CustomerOrderDetail_ibfk_1",
+          "tableFrom": "CustomerOrderDetail",
+          "tableTo": "CustomerOrder",
+          "columnsFrom": [
+            "CustomerOrderID"
+          ],
+          "columnsTo": [
+            "CustomerOrderID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "CustomerOrderDetail_ibfk_2": {
+          "name": "CustomerOrderDetail_ibfk_2",
+          "tableFrom": "CustomerOrderDetail",
+          "tableTo": "Product",
+          "columnsFrom": [
+            "ProductID"
+          ],
+          "columnsTo": [
+            "ProductID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "CustomerOrderDetail_chk_1": {
+          "name": "CustomerOrderDetail_chk_1",
+          "value": "(`Quantity` > 0)"
+        }
+      }
+    },
+    "InboundShipment": {
+      "name": "InboundShipment",
+      "columns": {
+        "ShipID": {
+          "autoincrement": true,
+          "name": "ShipID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ShipmentTime": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "ShipmentTime",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "InboundShipment_ShipID": {
+          "name": "InboundShipment_ShipID",
+          "columns": [
+            "ShipID"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "InboundShipmentDetail": {
+      "name": "InboundShipmentDetail",
+      "columns": {
+        "DetailID": {
+          "autoincrement": true,
+          "name": "DetailID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ShipID": {
+          "autoincrement": false,
+          "name": "ShipID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ProductID": {
+          "autoincrement": false,
+          "name": "ProductID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ReceivedQuantity": {
+          "autoincrement": false,
+          "name": "ReceivedQuantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "InboundShipmentDetail_DetailID": {
+          "name": "InboundShipmentDetail_DetailID",
+          "columns": [
+            "DetailID"
+          ]
+        }
+      },
+      "indexes": {
+        "ProductID": {
+          "name": "ProductID",
+          "columns": [
+            "ProductID"
+          ],
+          "isUnique": false
+        },
+        "ShipID": {
+          "name": "ShipID",
+          "columns": [
+            "ShipID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "InboundShipmentDetail_ibfk_1": {
+          "name": "InboundShipmentDetail_ibfk_1",
+          "tableFrom": "InboundShipmentDetail",
+          "tableTo": "InboundShipment",
+          "columnsFrom": [
+            "ShipID"
+          ],
+          "columnsTo": [
+            "ShipID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "InboundShipmentDetail_ibfk_2": {
+          "name": "InboundShipmentDetail_ibfk_2",
+          "tableFrom": "InboundShipmentDetail",
+          "tableTo": "Product",
+          "columnsFrom": [
+            "ProductID"
+          ],
+          "columnsTo": [
+            "ProductID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "InboundShipmentDetail_chk_1": {
+          "name": "InboundShipmentDetail_chk_1",
+          "value": "(`ReceivedQuantity` >= 0)"
+        }
+      }
+    },
+    "Inspection": {
+      "name": "Inspection",
+      "columns": {
+        "InspectID": {
+          "autoincrement": true,
+          "name": "InspectID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "StockID": {
+          "autoincrement": false,
+          "name": "StockID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "InspectDate": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "InspectDate",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "DefectQuantity": {
+          "autoincrement": false,
+          "name": "DefectQuantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Reason": {
+          "autoincrement": false,
+          "name": "Reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "Inspection_InspectID": {
+          "name": "Inspection_InspectID",
+          "columns": [
+            "InspectID"
+          ]
+        }
+      },
+      "indexes": {
+        "StockID": {
+          "name": "StockID",
+          "columns": [
+            "StockID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Inspection_ibfk_1": {
+          "name": "Inspection_ibfk_1",
+          "tableFrom": "Inspection",
+          "tableTo": "Stock",
+          "columnsFrom": [
+            "StockID"
+          ],
+          "columnsTo": [
+            "StockID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "Inspection_chk_1": {
+          "name": "Inspection_chk_1",
+          "value": "(`DefectQuantity` >= 0)"
+        }
+      }
+    },
+    "LocationBin": {
+      "name": "LocationBin",
+      "columns": {
+        "LocID": {
+          "autoincrement": false,
+          "name": "LocID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Aisle": {
+          "autoincrement": false,
+          "name": "Aisle",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Section": {
+          "autoincrement": false,
+          "name": "Section",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Shelf": {
+          "autoincrement": false,
+          "name": "Shelf",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Capacity": {
+          "autoincrement": false,
+          "name": "Capacity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "LocationBin_LocID": {
+          "name": "LocationBin_LocID",
+          "columns": [
+            "LocID"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "LocationBin_chk_1": {
+          "name": "LocationBin_chk_1",
+          "value": "(`Capacity` > 0)"
+        }
+      }
+    },
+    "OrderTransaction": {
+      "name": "OrderTransaction",
+      "columns": {
+        "TransactionID": {
+          "autoincrement": true,
+          "name": "TransactionID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "CustomerOrderID": {
+          "autoincrement": false,
+          "name": "CustomerOrderID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "RefID": {
+          "autoincrement": false,
+          "name": "RefID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "TransactionTime": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "TransactionTime",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "TransactionType": {
+          "autoincrement": false,
+          "name": "TransactionType",
+          "type": "enum('Receive','Pick and Pack','Ship')",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "OrderTransaction_TransactionID": {
+          "name": "OrderTransaction_TransactionID",
+          "columns": [
+            "TransactionID"
+          ]
+        }
+      },
+      "indexes": {
+        "CustomerOrderID": {
+          "name": "CustomerOrderID",
+          "columns": [
+            "CustomerOrderID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "OrderTransaction_ibfk_1": {
+          "name": "OrderTransaction_ibfk_1",
+          "tableFrom": "OrderTransaction",
+          "tableTo": "CustomerOrder",
+          "columnsFrom": [
+            "CustomerOrderID"
+          ],
+          "columnsTo": [
+            "CustomerOrderID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "OutboundShipment": {
+      "name": "OutboundShipment",
+      "columns": {
+        "ShipmentID": {
+          "autoincrement": true,
+          "name": "ShipmentID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ShipmentDate": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "ShipmentDate",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Carrier": {
+          "autoincrement": false,
+          "name": "Carrier",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "TrackingNumber": {
+          "autoincrement": false,
+          "name": "TrackingNumber",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "OutboundShipment_ShipmentID": {
+          "name": "OutboundShipment_ShipmentID",
+          "columns": [
+            "ShipmentID"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {
+        "TrackingNumber": {
+          "name": "TrackingNumber",
+          "columns": [
+            "TrackingNumber"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "PickingList": {
+      "name": "PickingList",
+      "columns": {
+        "PicklistID": {
+          "autoincrement": true,
+          "name": "PicklistID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "GeneratedAt": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "GeneratedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "DoneAt": {
+          "autoincrement": false,
+          "name": "DoneAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "PickingList_PicklistID": {
+          "name": "PickingList_PicklistID",
+          "columns": [
+            "PicklistID"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "Product": {
+      "name": "Product",
+      "columns": {
+        "ProductID": {
+          "autoincrement": false,
+          "name": "ProductID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Name": {
+          "autoincrement": false,
+          "name": "Name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "SKU": {
+          "autoincrement": false,
+          "name": "SKU",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "UnitOfMeasure": {
+          "autoincrement": false,
+          "name": "UnitOfMeasure",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "CreatedAt": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "CreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "UpdatedAt": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "UpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "onUpdate": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Product_ProductID": {
+          "name": "Product_ProductID",
+          "columns": [
+            "ProductID"
+          ]
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {
+        "SKU": {
+          "name": "SKU",
+          "columns": [
+            "SKU"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "PurchaseOrder": {
+      "name": "PurchaseOrder",
+      "columns": {
+        "PO_ID": {
+          "autoincrement": true,
+          "name": "PO_ID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ShipID": {
+          "autoincrement": false,
+          "name": "ShipID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "CreatedAt": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "CreatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "PurchaseOrder_PO_ID": {
+          "name": "PurchaseOrder_PO_ID",
+          "columns": [
+            "PO_ID"
+          ]
+        }
+      },
+      "indexes": {
+        "ShipID": {
+          "name": "ShipID",
+          "columns": [
+            "ShipID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "PurchaseOrder_ibfk_1": {
+          "name": "PurchaseOrder_ibfk_1",
+          "tableFrom": "PurchaseOrder",
+          "tableTo": "InboundShipment",
+          "columnsFrom": [
+            "ShipID"
+          ],
+          "columnsTo": [
+            "ShipID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "PurchaseOrderDetail": {
+      "name": "PurchaseOrderDetail",
+      "columns": {
+        "PODetailID": {
+          "autoincrement": true,
+          "name": "PODetailID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "PO_ID": {
+          "autoincrement": false,
+          "name": "PO_ID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ProductID": {
+          "autoincrement": false,
+          "name": "ProductID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "OrderedQuantity": {
+          "autoincrement": false,
+          "name": "OrderedQuantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "PurchaseOrderDetail_PODetailID": {
+          "name": "PurchaseOrderDetail_PODetailID",
+          "columns": [
+            "PODetailID"
+          ]
+        }
+      },
+      "indexes": {
+        "PO_ID": {
+          "name": "PO_ID",
+          "columns": [
+            "PO_ID"
+          ],
+          "isUnique": false
+        },
+        "ProductID": {
+          "name": "ProductID",
+          "columns": [
+            "ProductID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "PurchaseOrderDetail_ibfk_1": {
+          "name": "PurchaseOrderDetail_ibfk_1",
+          "tableFrom": "PurchaseOrderDetail",
+          "tableTo": "PurchaseOrder",
+          "columnsFrom": [
+            "PO_ID"
+          ],
+          "columnsTo": [
+            "PO_ID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "PurchaseOrderDetail_ibfk_2": {
+          "name": "PurchaseOrderDetail_ibfk_2",
+          "tableFrom": "PurchaseOrderDetail",
+          "tableTo": "Product",
+          "columnsFrom": [
+            "ProductID"
+          ],
+          "columnsTo": [
+            "ProductID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "PurchaseOrderDetail_chk_1": {
+          "name": "PurchaseOrderDetail_chk_1",
+          "value": "(`OrderedQuantity` > 0)"
+        }
+      }
+    },
+    "Stock": {
+      "name": "Stock",
+      "columns": {
+        "StockID": {
+          "autoincrement": true,
+          "name": "StockID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ProductID": {
+          "autoincrement": false,
+          "name": "ProductID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "LocID": {
+          "autoincrement": false,
+          "name": "LocID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "Quantity": {
+          "autoincrement": false,
+          "name": "Quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "LastUpdated": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "LastUpdated",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "onUpdate": true
+        }
+      },
+      "compositePrimaryKeys": {
+        "Stock_StockID": {
+          "name": "Stock_StockID",
+          "columns": [
+            "StockID"
+          ]
+        }
+      },
+      "indexes": {
+        "LocID": {
+          "name": "LocID",
+          "columns": [
+            "LocID"
+          ],
+          "isUnique": false
+        },
+        "ProductID": {
+          "name": "ProductID",
+          "columns": [
+            "ProductID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "Stock_ibfk_1": {
+          "name": "Stock_ibfk_1",
+          "tableFrom": "Stock",
+          "tableTo": "Product",
+          "columnsFrom": [
+            "ProductID"
+          ],
+          "columnsTo": [
+            "ProductID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "Stock_ibfk_2": {
+          "name": "Stock_ibfk_2",
+          "tableFrom": "Stock",
+          "tableTo": "LocationBin",
+          "columnsFrom": [
+            "LocID"
+          ],
+          "columnsTo": [
+            "LocID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "Stock_chk_1": {
+          "name": "Stock_chk_1",
+          "value": "(`Quantity` >= 0)"
+        }
+      }
+    },
+    "StockTransaction": {
+      "name": "StockTransaction",
+      "columns": {
+        "TransactionID": {
+          "autoincrement": true,
+          "name": "TransactionID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ProductID": {
+          "autoincrement": false,
+          "name": "ProductID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "LocID": {
+          "autoincrement": false,
+          "name": "LocID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "TransactionType": {
+          "autoincrement": false,
+          "name": "TransactionType",
+          "type": "enum('Store','Pick','Remove')",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "RefID": {
+          "autoincrement": false,
+          "name": "RefID",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "Quantity": {
+          "autoincrement": false,
+          "name": "Quantity",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "TransactionDate": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "TransactionDate",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "compositePrimaryKeys": {
+        "StockTransaction_TransactionID": {
+          "name": "StockTransaction_TransactionID",
+          "columns": [
+            "TransactionID"
+          ]
+        }
+      },
+      "indexes": {
+        "LocID": {
+          "name": "LocID",
+          "columns": [
+            "LocID"
+          ],
+          "isUnique": false
+        },
+        "ProductID": {
+          "name": "ProductID",
+          "columns": [
+            "ProductID"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "StockTransaction_ibfk_1": {
+          "name": "StockTransaction_ibfk_1",
+          "tableFrom": "StockTransaction",
+          "tableTo": "Product",
+          "columnsFrom": [
+            "ProductID"
+          ],
+          "columnsTo": [
+            "ProductID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "StockTransaction_ibfk_2": {
+          "name": "StockTransaction_ibfk_2",
+          "tableFrom": "StockTransaction",
+          "tableTo": "LocationBin",
+          "columnsFrom": [
+            "LocID"
+          ],
+          "columnsTo": [
+            "LocID"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {
+        "StockTransaction_chk_1": {
+          "name": "StockTransaction_chk_1",
+          "value": "(`Quantity` > 0)"
+        }
+      }
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {
+      "CustomerOrder": {
+        "columns": {
+          "OrderDate": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "InboundShipment": {
+        "columns": {
+          "ShipmentTime": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "Inspection": {
+        "columns": {
+          "InspectDate": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "OrderTransaction": {
+        "columns": {
+          "TransactionTime": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "OutboundShipment": {
+        "columns": {
+          "ShipmentDate": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "PickingList": {
+        "columns": {
+          "GeneratedAt": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "Product": {
+        "columns": {
+          "CreatedAt": {
+            "isDefaultAnExpression": true
+          },
+          "UpdatedAt": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "PurchaseOrder": {
+        "columns": {
+          "CreatedAt": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "Stock": {
+        "columns": {
+          "LastUpdated": {
+            "isDefaultAnExpression": true
+          }
+        }
+      },
+      "StockTransaction": {
+        "columns": {
+          "TransactionDate": {
+            "isDefaultAnExpression": true
+          }
+        }
+      }
+    },
+    "indexes": {}
+  }
+}

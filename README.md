@@ -12,6 +12,8 @@ cp .env.example .env
 
 If one want to remove all the data in the date base, run `docker-compose -f docker/docker-compose.yaml down -v`
 
+If one want to keep the data, remove the tag `-v`
+
 > This command will remove the volume of db_data for consistent data.
 >
 > The database only run the init.sql file only when the volume/image first created.
