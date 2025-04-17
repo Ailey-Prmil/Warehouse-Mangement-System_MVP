@@ -18,7 +18,7 @@ import { sql } from "drizzle-orm";
 export const customerOrder = mysqlTable(
   "CustomerOrder",
   {
-    customerOrderId: int("CustomerOrderID").notNull(),
+    customerOrderId: int("CustomerOrderID").autoincrement().notNull(),
     orderDate: timestamp("OrderDate", { mode: "string" }).defaultNow(),
     status: mysqlEnum("Status", ["Pending", "Pick and Pack", "Shipped"])
       .default("Pending")

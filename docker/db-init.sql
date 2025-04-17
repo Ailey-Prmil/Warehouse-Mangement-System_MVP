@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS Product (
 
 CREATE TABLE IF NOT EXISTS CustomerOrder ( -- Customize for Warehouse usage
     -- Add Shipment ID
-    CustomerOrderID INT PRIMARY KEY,
+    CustomerOrderID INT PRIMARY KEY AUTO_INCREMENT,
     OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Status ENUM('Pending', 'Pick and Pack', 'Shipped') NOT NULL DEFAULT 'Pending',
     Address VARCHAR(100)
