@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS Product (
-    ProductID INT PRIMARY KEY,
+    ProductID INT PRIMARY KEY AUTO_INCREMENT,
     Name VARCHAR(255) NOT NULL,
     SKU VARCHAR(100) UNIQUE NOT NULL,
     UnitOfMeasure VARCHAR(50),
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrderDetail ( -- Only care about quantity (no
 );
 
 CREATE TABLE IF NOT EXISTS LocationBin (
-    LocID INT PRIMARY KEY,
+    LocID INT PRIMARY KEY AUTO_INCREMENT,
     Aisle VARCHAR(50),
     Section VARCHAR(50),
     Shelf VARCHAR(50),
