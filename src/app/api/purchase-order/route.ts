@@ -1,28 +1,27 @@
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import db from "@/database";
-import { customerOrder } from "@/../drizzle/schema";
+import { purchaseOrder } from "@/../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const revalidate = 60;
 
 export async function GET() {
-  const customerOrders = await db.select().from(customerOrder);
-  return NextResponse.json(customerOrders, {
+  const purchaseOrders = await db.select().from(purchaseOrder);
+  return NextResponse.json(purchaseOrders, {
     status: 200,
   });
 }
-// when inserting data, do not use the customerOrderId, it is auto-incremented
-// status field is also automated, so it is not needed in the request body
+
 export async function POST(request: NextRequest) {
+  // not essential
   const body = await request.json();
-  const { orderDate, address } = body;
+  const { shipId } = body;
   try {
-    const newOrder = await db.insert(customerOrder).values({
-      orderDate: orderDate,
-      address: address,
+    const newPurchasingOrder = await db.insert(purchaseOrder).values({
+      shipId: shipId,
     });
-    return NextResponse.json(newOrder, {});
+    return NextResponse.json(newPurchasingOrder, {});
   } catch (error) {
     console.error("Error inserting data:", error);
     return NextResponse.json(
@@ -31,17 +30,17 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-// only update the status of the order, not the orderId or address
+
 export async function PUT(request: NextRequest) {
   const body = await request.json();
-  const { orderId, newStatus } = body;
+  const { poId, shipId } = body;
   try {
     const updatedOrder = await db
-      .update(customerOrder)
+      .update(purchaseOrder)
       .set({
-        status: newStatus,
+        shipId: shipId,
       })
-      .where(eq(customerOrder.customerOrderId, orderId));
+      .where(eq(purchaseOrder.poId, poId));
     return NextResponse.json(updatedOrder, {
       status: 200,
     });

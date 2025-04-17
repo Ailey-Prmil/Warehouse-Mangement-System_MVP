@@ -41,32 +41,32 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+// this table uses mock data, so POST and PUT are not essential
+// export async function POST(request: NextRequest) {
+//   const body = await request.json();
+//   const { orderId, productId, quantity } = body;
 
-export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { orderId, productId, quantity } = body;
+//   if (!orderId || !productId || !quantity) {
+//     return NextResponse.json(
+//       { message: "Order ID, Product ID and Quantity are required" },
+//       { status: 400 }
+//     );
+//   }
 
-  if (!orderId || !productId || !quantity) {
-    return NextResponse.json(
-      { message: "Order ID, Product ID and Quantity are required" },
-      { status: 400 }
-    );
-  }
-
-  try {
-    const newOrderDetail = await db.insert(customerOrderDetail).values({
-      customerOrderId: orderId,
-      productId: productId,
-      quantity: quantity,
-    });
-    return NextResponse.json(newOrderDetail, {
-      status: 201,
-    });
-  } catch (error) {
-    console.error("Error inserting data:", error);
-    return NextResponse.json(
-      { message: "Error inserting data" },
-      { status: 500 }
-    );
-  }
-}
+//   try {
+//     const newOrderDetail = await db.insert(customerOrderDetail).values({
+//       customerOrderId: orderId,
+//       productId: productId,
+//       quantity: quantity,
+//     });
+//     return NextResponse.json(newOrderDetail, {
+//       status: 201,
+//     });
+//   } catch (error) {
+//     console.error("Error inserting data:", error);
+//     return NextResponse.json(
+//       { message: "Error inserting data" },
+//       { status: 500 }
+//     );
+//   }
+// }

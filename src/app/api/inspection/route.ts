@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import db from "@/database";
 import { inspection } from "@/../drizzle/schema";
-import { eq } from "drizzle-orm";
 
 export const revalidate = 60;
 
@@ -13,20 +12,20 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { inspectionId, productId, quantity } = body;
+  const { stockId, defectQuantity, reason } = body;
 
-  if (!inspectionId || !productId || !quantity) {
+  if (!stockId || !defectQuantity) {
     return NextResponse.json(
-      { message: "Inspection ID, Product ID and Quantity are required" },
+      { message: "Stock ID, Defect Quantity are required" },
       { status: 400 }
     );
   }
 
   try {
     const newInspection = await db.insert(inspection).values({
-      inspectionId: inspectionId,
-      productId: productId,
-      quantity: quantity,
+      stockId: stockId,
+      defectQuantity: defectQuantity,
+      reason: reason,
     });
 
     return NextResponse.json(newInspection, { status: 201 });
