@@ -1,5 +1,3 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## 🧪 Setup Instructions
 
 1. Copy `.env.example` to `.env`
@@ -17,6 +15,24 @@ If one want to keep the data, remove the tag `-v`
 > This command will remove the volume of db_data for consistent data.
 >
 > The database only run the init.sql file only when the volume/image first created.
+
+> [!NOTE]
+>
+> 1. The wms container is removed from the compose file
+> 2. This is to allow the feature of hot reloading in the development phase. The docker mounting does not fully support this feature.
+
+To set up:
+
+1. Copy `.env.example` to `.env`
+
+```bash
+cp .env.example .env
+```
+
+2. Run `docker-compose -f docker/docker-compose.yaml up --build -d`
+   > Run the container in the detached mode -- only run the database
+   > The app service has been commented
+3. Run `npm run dev`
 
 ## Getting Started
 
