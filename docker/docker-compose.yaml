@@ -3,7 +3,7 @@ version: "3.8"
 services:
   db:
     image: mysql:8.0
-    container_name: mysql_db
+    container_name: mysql_db_wms
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: wmsadmin
@@ -11,34 +11,33 @@ services:
       MYSQL_USER: wmsuser
       MYSQL_PASSWORD: wmspassword
     ports:
-      - "3100:3306"
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
       - ./db-init.sql:/docker-entrypoint-initdb.d/01-init.sql
       - ./db-seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
-    networks:
-      - app-network
+    # networks:
+    #   - app-network
 
-  app:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    container_name: wms
-    ports:
-      - "3001:3000" # change this if your app runs on a different port
-    env_file:
-      - ../.env
-    depends_on:
-      - db
-    networks:
-      - app-network
-    volumes:
-      - ..:/app
-      - /app/node_modules
+  # app:
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile
+  #   container_name: wms
+  #   ports:
+  #     - "3001:3000" # change this if your app runs on a different port
+  #   env_file:
+  #     - ../.env
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - app-network
+  #   volumes:
+  #     - ..:/app
+  #     - /app/node_modules
 
 volumes:
   db_data:
-
-networks:
-  app-network:
-    driver: bridge
+# networks:
+#   app-network:
+#     driver: bridge

@@ -133,6 +133,7 @@ CREATE TRIGGER AutomateStockQuantity BEFORE INSERT ON StockTransaction
     BEGIN
         -- DECLARE AND ASSIGN VARIABLES
         DECLARE AvailableSpace, CurrentStock INT;
+        DECLARE StockQuantity INT;
 
         IF NEW.TransactionType = "Store"
         THEN
@@ -174,6 +175,18 @@ CREATE TRIGGER AutomateStockQuantity BEFORE INSERT ON StockTransaction
                 SET Quantity = Quantity - new.Quantity
                 WHERE LocID = NEW.LocID
                     AND ProductID = NEW.ProductID;
+                
+                SELECT Quantity INTO StockQuantity
+                FROM Stock
+                WHERE LocID = NEW.LocID
+                    AND ProductID = NEW.ProductID;
+                
+                IF (StockQuantity = 0)
+                THEN
+                    DELETE FROM Stock
+                    WHERE LocID = NEW.LocID
+                        AND ProductID = NEW.ProductID;
+                END IF;
             ELSE
                 SIGNAL SQLSTATE '45000'
                 SET MESSAGE_TEXT = 'The stock is not enough for this transaction';

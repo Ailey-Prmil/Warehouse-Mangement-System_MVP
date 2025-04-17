@@ -2,11 +2,11 @@
 FROM node:18
 
 # Set working directory
-WORKDIR /src/app
+WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .

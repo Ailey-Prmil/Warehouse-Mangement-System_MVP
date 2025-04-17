@@ -1,43 +1,25 @@
 import db from "@/database";
-import { locationBin } from "@/../drizzle/schema";
+import { eq } from "drizzle-orm";
+import { locationBin, customerOrder } from "@/../drizzle/schema";
 export default async function Home() {
-  // Example query
-  await db.insert(locationBin).values([
-    {
-      locId: 1,
-      aisle: "A1",
-      section: "S1",
-      shelf: "SH1",
-      capacity: 100,
-    },
-    {
-      locId: 2,
-      aisle: "A2",
-      section: "S1",
-      shelf: "SH2",
-      capacity: 150,
-    },
-    {
-      locId: 3,
-      aisle: "A1",
-      section: "S2",
-      shelf: "SH1",
-      capacity: 120,
-    },
-  ]);
   const locationBins = await db.select().from(locationBin);
-  console.log(locationBins);
+  const customerOrders = await db
+    .select()
+    .from(customerOrder)
+    .where(eq(customerOrder.status, "Pending"))
+    .limit(5);
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="grid grid-rows-[20px_1fr_20px] justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <h1>
         {" "}
         {locationBins.map((bin) => (
-          <div key={bin.locId}>
-            <p>LocID: {bin.locId}</p>
-            <p>Aisle: {bin.aisle}</p>
-            <p>Section: {bin.section}</p>
-            <p>Shelf: {bin.shelf}</p>
-            <p>Capacity: {bin.capacity}</p>
+          <div key={bin.locId} className="flex gap-2 flex-col">
+            <h1>LocID: {bin.locId}</h1>
+          </div>
+        ))}
+        {customerOrders.map((order) => (
+          <div key={order.customerOrderId} className="flex gap-2 flex-col">
+            <h1>CustomerOrderID: {order.customerOrderId}</h1>
           </div>
         ))}
       </h1>
