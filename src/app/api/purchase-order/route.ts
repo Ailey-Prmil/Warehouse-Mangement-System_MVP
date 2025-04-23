@@ -14,11 +14,13 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // there should be multiple values of existing PO (with or without shipID)
   // not essential
   const body = await request.json();
   const { shipId } = body;
   try {
     const newPurchasingOrder = await db.insert(purchaseOrder).values({
+      // po_id is auto generated
       shipId: shipId,
     });
     return NextResponse.json(newPurchasingOrder, {});

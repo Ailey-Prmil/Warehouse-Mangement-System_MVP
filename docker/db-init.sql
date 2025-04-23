@@ -193,3 +193,32 @@ CREATE TRIGGER AutomateStockQuantity BEFORE INSERT ON StockTransaction
                 END IF;
         END IF;
     END ||
+
+-- Create trigger when inserting to inspection - auto insert to stock transaction
+
+CREATE TRIGGER AutomateInspectionStockTransaction AFTER INSERT ON Inspection
+    FOR EACH ROW
+    BEGIN
+        DECLARE NewProductID, NewLocID INT;
+
+        SELECT ProductID, LocID INTO NewProductID, NewLocID
+        FROM Stock
+        WHERE Stock.StockID = NEW.StockID;
+
+        INSERT INTO StockTransaction (ProductID, LocID, TransactionType, RefID, Quantity)
+        VALUES (NewProductID, NewLocID, "Remove", NEW.InspectID, NEW.DefectQuantity);
+    END ||
+
+
+-- Create trigger to insert all details within the PO to the relevant shipment
+-- seek for different alternatives ?
+-- Duplicate key could be found (ProductID and ShipID should be the composite primary key)
+-- Complicated to carry in database -- backend instead ?
+
+-- Create trigger when inserting to customer order - auto insert to order transaction - type Receive
+CREATE TRIGGER AutomateCustomerOrderReceiveTransaction AFTER INSERT ON CustomerOrder
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO OrderTransaction (CustomerOrderID, TransactionType)
+        VALUES (NEW.CustomerOrderID, "Receive");
+    END ||
