@@ -5,10 +5,13 @@ import { purchaseOrderDetail, purchaseOrder } from "@/../drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const revalidate = 60;
-
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const poId = Number(searchParams.get("poId"));
+type PoIdParams = {
+  params: {
+    poId: string;
+  };
+};
+export async function GET(request: NextRequest, { params }: PoIdParams) {
+  const poId = Number(params.poId);
 
   if (!poId) {
     return NextResponse.json(

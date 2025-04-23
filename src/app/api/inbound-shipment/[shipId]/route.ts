@@ -7,10 +7,17 @@ import {
   purchaseOrderDetail,
 } from "@/../drizzle/schema";
 import { eq, sum, and } from "drizzle-orm";
+type InboundShipIdParams = {
+  params: {
+    shipId: string;
+  };
+};
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const shipId = Number(searchParams.get("shipId"));
+export async function GET(
+  request: NextRequest,
+  { params }: InboundShipIdParams
+) {
+  const shipId = Number(params.shipId);
 
   const purchaseOrders = await db
     .select({
