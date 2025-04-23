@@ -6,9 +6,13 @@ import { eq } from "drizzle-orm";
 
 export const revalidate = 60;
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const orderId = Number(searchParams.get("orderId"));
+type OrderIdParams = {
+  params: {
+    orderId: string;
+  };
+};
+export async function GET(request: NextRequest, { params }: OrderIdParams) {
+  const orderId = Number(params.orderId);
 
   if (!orderId) {
     return NextResponse.json(
@@ -25,6 +29,12 @@ export async function GET(request: NextRequest) {
       })
       .from(customerOrderDetail)
       .where(eq(customerOrderDetail.customerOrderId, orderId));
+    if (!orderDetails || orderDetails.length === 0) {
+      return NextResponse.json(
+        { message: `No order found with ID ${orderId}` },
+        { status: 404 }
+      );
+    }
 
     const orderDetailsResponse = {
       orderId: orderId,

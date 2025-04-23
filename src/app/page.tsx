@@ -32,22 +32,22 @@
 // }
 
 export default async function Home() {
-  const res = await fetch("http://localhost:3001/api/location", {
-    cache: "no-store", // disables caching (good for dynamic data)
-  });
-  const locationBins = await res.json();
-  console.log(locationBins);
+  // const res = await fetch("http://localhost:3001/api/location", {
+  //   cache: "no-store", // disables caching (good for dynamic data)
+  // });
+  // const locationBins = await res.json();
+  // console.log(locationBins);
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <h1>
         <div className="text-3xl font-bold">Welcome to the Warehouse</div>
-        {locationBins.map((bin: any) => (
+        {/* {locationBins.map((bin: any) => (
           <div key={bin.locId} className="flex gap-2 flex-col">
             <p>LocID {bin.locId}</p>
             <h1>Capacity: {bin.capacity}</h1>
           </div>
-        ))}
+        ))} */}
       </h1>
     </div>
   );
