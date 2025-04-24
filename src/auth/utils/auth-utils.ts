@@ -11,9 +11,10 @@ const JWT_CONFIG = {
   REFRESH_TOKEN_EXPIRATION: process.env.JWT_REFRESH_EXPIRATION || '7d'
 };
 
-// File path for storing temporary user data
-const TEMP_USER_FILE = path.join(__dirname, '../data/temp-user.json');
-const REFRESH_TOKENS_FILE = path.join(__dirname, '../data/refresh-tokens.json');
+// Absolute file paths for storing user data
+const PROJECT_ROOT = process.cwd();
+const TEMP_USER_FILE = path.join(PROJECT_ROOT, 'src/auth/data/temp-user.json');
+const REFRESH_TOKENS_FILE = path.join(PROJECT_ROOT, 'src/auth/data/refresh-tokens.json');
 
 // Ensure the data directory exists
 const ensureDataDirectoryExists = async (): Promise<void> => {
@@ -42,9 +43,15 @@ export const saveUser = async (user: User): Promise<void> => {
 export const getUser = async (): Promise<User | null> => {
   try {
     await ensureDataDirectoryExists();
+    console.log(`Checking for user file at: ${TEMP_USER_FILE}`);
+    
     if (await fs.pathExists(TEMP_USER_FILE)) {
-      return fs.readJSON(TEMP_USER_FILE) as Promise<User>;
+      const userData = await fs.readJSON(TEMP_USER_FILE) as User;
+      console.log('User data found:', { username: userData.username });
+      return userData;
     }
+    
+    console.log('No user file found at path');
     return null;
   } catch (error) {
     console.error('Error reading user file:', error);

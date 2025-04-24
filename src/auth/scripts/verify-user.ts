@@ -75,9 +75,19 @@ if (require.main === module) {
   const username = args[0];
   const password = args[1];
   
+  // Direct verification from data directory
   verifyUser(username, password)
     .then(result => {
       console.log(JSON.stringify(result, null, 2));
+      
+      // If successful, display token information for direct usage 
+      if (result.success) {
+        console.log("\n=== Authentication Successful ===");
+        console.log("Copy these tokens for direct use in the application:");
+        console.log(`Access Token: ${result.accessToken}`);
+        console.log(`Refresh Token: ${result.refreshToken}`);
+        console.log("=============================");
+      }
     })
     .catch(err => {
       console.error('Failed to verify user:', err);
@@ -86,3 +96,17 @@ if (require.main === module) {
 }
 
 export { verifyUser };
+
+// Note: API integration commented out for now as the API is not fully implemented
+// To integrate with the API later, uncomment and adjust the following endpoint calls:
+/*
+app.post('/api/auth/login', async (req, res) => {
+  const { username, password } = req.body;
+  const result = await verifyUser(username, password);
+  if (result.success) {
+    res.status(200).json(result);
+  } else {
+    res.status(401).json(result);
+  }
+});
+*/
