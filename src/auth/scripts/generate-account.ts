@@ -36,7 +36,7 @@ if (require.main === module) {
   const args = process.argv.slice(2);
   
   if (args.length < 2) {
-    console.error('Usage: ts-node generate-account.ts <username> <password>');
+    console.error('Usage: tsx generate-account.ts <username> <password>');
     process.exit(1);
   }
   
