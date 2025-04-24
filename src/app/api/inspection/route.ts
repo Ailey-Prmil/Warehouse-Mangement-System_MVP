@@ -9,7 +9,7 @@ export async function GET() {
   const inspections = await db.select().from(inspection);
   return NextResponse.json(inspections, { status: 200 });
 }
-
+// cannot delete because there is no trigger for delete
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { stockId, defectQuantity, reason } = body;

@@ -23,11 +23,18 @@ export async function POST() {
   }
 }
 export async function DELETE(request: NextRequest) {
-  const { id } = await request.json();
+  const { shipId } = await request.json();
   try {
     const deletedInboundShipment = await db
       .delete(inboundShipment)
-      .where(eq(inboundShipment.shipId, id));
+      .where(eq(inboundShipment.shipId, shipId));
+
+    // if (deletedInboundShipment.rowCount === 0) {
+    //   return NextResponse.json(
+    //     { message: "No inbound shipment found with the given ID" },
+    //     { status: 404 }
+    //   );
+    // }
     return NextResponse.json(deletedInboundShipment, { status: 200 });
   } catch (error) {
     console.error("Error deleting inbound shipment:", error);

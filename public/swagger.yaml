@@ -10,887 +10,862 @@ info:
   version: 1.0.0
 
 tags:
-  - name: inbound-functions
+  - name: Inbound functions
     description: All relevant operations in the inbound phase of WMS operations, managing purchasing order, purchasing order details, inbound shipment, inbound shipment details.
 
-  - name: outbound-functions
+  - name: Outbound functions
     description: All relevant operations in the outbound phase of WMS operations, managing customer order, customer order details, outbound shipment, order transaction.
 
-  - name: stock-functions
+  - name: Stock functions
     description: All relevant operations to keep stock or inspect stock within, managing inspection, location, order transaction, picking list, product, stock, stock transaction.
 paths:
-  /customer-order:
+  /api/customer-order:
+    get:
+      tags:
+        - Outbound functions
+      summary: Get all available customer orders
+      description: Get all information (CustomerOrderId, OrderDate, Status,...) abount all available customer orders
+      operationId: getAllCustomerOrders
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerOrder"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Outbound functions
+      summary: Add a new customer order to WMS.
+      description: Insert a new customer order record into the system.
+      operationId: addCustomerOrder
+      requestBody:
+        description: Create a new customer order
+        content:
+          application/json:
+            $ref: "#/components/schemas/InsertCustomerOrder"
+        required: true
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerOrder"
+
+        "500":
+          description: Error inserting data
+          schema:
+            $ref: "#/components/schemas/Error"
     put:
       tags:
-        - pet
-      summary: Update an existing pet.
-      description: Update an existing pet by Id.
-      operationId: updatePet
+        - Outbound functions
+      summary: Update the status of the customer order.
+      description: All other field of customer order should be static (out of scope of a WMS). Only status is allowed to be editted.
+      operationId: updateCustomerOrder
       requestBody:
-        description: Update an existent pet in the store
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Pet"
-          application/xml:
-            schema:
-              $ref: "#/components/schemas/Pet"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/Pet"
-        required: true
+              $ref: "#/components/schemas/UpdateCustomerOrder"
       responses:
-        "200":
+        "201":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Pet"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/Pet"
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Pet not found
-        "422":
-          description: Validation exception
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    post:
-      tags:
-        - outbound-functions
-      summary: Add a new pet to the store.
-      description: Add a new pet to the store.
-      operationId: addPet
-      requestBody:
-        description: Create a new pet in the store
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Pet"
-          application/xml:
-            schema:
-              $ref: "#/components/schemas/Pet"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/Pet"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Pet"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/Pet"
-        "400":
-          description: Invalid input
-        "422":
-          description: Validation exception
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /customer-order/{orderId}:
+                $ref: "#/components/schemas/CustomerOrder"
+
+        "500":
+          description: Error updating data
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  /api/customer-order/{orderId}:
     get:
       tags:
-        - outbound-functions
-      summary: Finds Pets by status.
-      description: Multiple status values can be provided with comma separated strings.
-      operationId: findPetsByStatus
+        - Outbound functions
+      summary: Get the details of customer order by its orderId.
+      description: Get the details of products within the customer order idetified by the orderId.
+      operationId: getCustomerOrderDetails
       parameters:
-        - name: status
-          in: query
-          description: Status values that need to be considered for filter
-          required: false
-          explode: true
-          schema:
-            type: string
-            default: available
-            enum:
-              - available
-              - pending
-              - sold
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Pet"
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Pet"
-        "400":
-          description: Invalid status value
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/findByTags:
-    get:
-      tags:
-        - pet
-      summary: Finds Pets by tags.
-      description: Multiple tags can be provided with comma separated strings. Use tag1, tag2, tag3 for testing.
-      operationId: findPetsByTags
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: false
-          explode: true
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Pet"
-            application/xml:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Pet"
-        "400":
-          description: Invalid tag value
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/{petId}:
-    get:
-      tags:
-        - pet
-      summary: Find pet by ID.
-      description: Returns a single pet.
-      operationId: getPetById
-      parameters:
-        - name: petId
+        - name: orderId
           in: path
-          description: ID of pet to return
+          description: The key ID used to find target customer order.
           required: true
           schema:
-            type: integer
-            format: int64
+            oneOf:
+              - type: string
+              - type: integer
       responses:
         "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Pet"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/Pet"
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Pet not found
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - api_key: []
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    post:
-      tags:
-        - pet
-      summary: Updates a pet in the store with form data.
-      description: Updates a pet resource based on the form data.
-      operationId: updatePetWithForm
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet that needs to be updated
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: name
-          in: query
-          description: Name of pet that needs to be updated
-          schema:
-            type: string
-        - name: status
-          in: query
-          description: Status of pet that needs to be updated
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Pet"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/Pet"
-        "400":
-          description: Invalid input
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-    delete:
-      tags:
-        - pet
-      summary: Deletes a pet.
-      description: Delete a pet.
-      operationId: deletePet
-      parameters:
-        - name: api_key
-          in: header
-          description: ""
-          required: false
-          schema:
-            type: string
-        - name: petId
-          in: path
-          description: Pet id to delete
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: Pet deleted
-        "400":
-          description: Invalid pet value
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /pet/{petId}/uploadImage:
-    post:
-      tags:
-        - pet
-      summary: Uploads an image.
-      description: Upload image of the pet.
-      operationId: uploadFile
-      parameters:
-        - name: petId
-          in: path
-          description: ID of pet to update
-          required: true
-          schema:
-            type: integer
-            format: int64
-        - name: additionalMetadata
-          in: query
-          description: Additional Metadata
-          required: false
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/octet-stream:
-            schema:
-              type: string
-              format: binary
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiResponse"
-        "400":
-          description: No file uploaded
-        "404":
-          description: Pet not found
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
-  /store/inventory:
-    get:
-      tags:
-        - store
-      summary: Returns pet inventories by status.
-      description: Returns a map of status codes to quantities.
-      operationId: getInventory
-      responses:
-        "200":
-          description: successful operation
+          description: successful fetching data of customer ordere
           content:
             application/json:
               schema:
                 type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-      security:
-        - api_key: []
-  /store/order:
-    post:
-      tags:
-        - store
-      summary: Place an order for a pet.
-      description: Place a new order in the store.
-      operationId: placeOrder
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Order"
-          application/xml:
-            schema:
-              $ref: "#/components/schemas/Order"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/Order"
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Order"
-        "400":
-          description: Invalid input
-        "422":
-          description: Validation exception
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /store/order/{orderId}:
+                properties:
+                  orderId:
+                    description: "The primary key of CustomerOrder"
+                    oneOf:
+                      - type: string
+                      - type: integer
+                    example: 1001
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          description: "The Id of the product included in a customer order."
+                          type: integer
+                          example: 101
+                        quantity:
+                          description: "The quantity of each product in the order."
+                          type: integer
+                          example: 30
+
+        "404":
+          description: Invalid orderId value
+          example: No order found with ID 10003
+        "500":
+          description: Error fetching data
+
+  /api/inbound-shipment:
     get:
       tags:
-        - store
-      summary: Find purchase order by ID.
-      description: For valid response try integer IDs with value <= 5 or > 10. Other values will generate exceptions.
-      operationId: getOrderById
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of order that needs to be fetched
-          required: true
-          schema:
-            type: integer
-            format: int64
+        - Inbound functions
+      summary: Get all available customer orders
+      description: Get all information about all available inbound shipments
+      operationId: getAllInboundShipment
       responses:
         "200":
-          description: successful operation
+          description: Successful operation
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Order"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/Order"
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Order not found
+                type: array
+                items:
+                  $ref: "#/components/schemas/InboundShipment"
+
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-    delete:
-      tags:
-        - store
-      summary: Delete purchase order by identifier.
-      description: For valid response try integer IDs with value < 1000. Anything above 1000 or nonintegers will generate API errors.
-      operationId: deleteOrder
-      parameters:
-        - name: orderId
-          in: path
-          description: ID of the order that needs to be deleted
-          required: true
-          schema:
-            type: integer
-            format: int64
-      responses:
-        "200":
-          description: order deleted
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: Order not found
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /user:
     post:
       tags:
-        - user
-      summary: Create user.
-      description: This can only be done by the logged in user.
-      operationId: createUser
+        - Inbound functions
+      summary: Add an inbound shipment to WMS.
+      description: Create a new customer order. There is only 2 fields in the inbound shipment. Both can be auto-generated by the database. Hence, no need for body request.
+      operationId: addInboundShipment
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboundShipment"
+
+        "500":
+          description: Error inserting data
+          schema:
+            $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Inbound functions
+      summary: Delete an inbound shipment by shipId
+      operationId: deleteInboundShipment
       requestBody:
-        description: Created user object
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
-          application/xml:
-            schema:
-              $ref: "#/components/schemas/User"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/User"
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 101
+              required:
+                - shipId
       responses:
         "200":
-          description: successful operation
+          description: Inbound shipment deleted successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/User"
-        default:
-          description: Unexpected error
+                $ref: "#/components/schemas/InboundShipment"
+        "400":
+          description: Invalid or missing shipId
+        "404":
+          description: No shipment found with given ID
+        "500":
+          description: Internal server error during deletion
+
+  /api/inbound-shipment/{shipId}:
+    get:
+      tags:
+        - Inbound functions
+      summary: Get the details of the inbound shipment by its shipId.
+      description: Get the details of products within the inbound shipment idetified by the shipId.
+      operationId: getInboundShipmentDetails
+      parameters:
+        - name: shipId
+          in: path
+          description: The key ID used to find target shipment.
+          required: true
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        "200":
+          description: successful fetching data of inbound shipment
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
-  /user/createWithList:
+                $ref: "#/components/schemas/InboundShipmentDetails"
+
+        "404":
+          description: Invalid orderId value
+          example: No order found with ID 10003
+        "500":
+          description: Error fetching data
     post:
       tags:
-        - user
-      summary: Creates list of users with given input array.
-      description: Creates list of users with given input array.
-      operationId: createUsersWithListInput
+        - Inbound functions
+      summary: Manually insert a new Inbound Shipment Detail record
+      description: Typically handled by a trigger, but this endpoint allows manual insertion for testing or manual correction.
+      operationId: createInboundShipmentDetail
       requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 101
+                productId:
+                  type: integer
+                  example: 2005
+                receivedQuantity:
+                  type: integer
+                  minimum: 0
+                  example: 0
+              required:
+                - shipId
+                - productId
+                - receivedQuantity
+      responses:
+        "201":
+          description: Inbound shipment detail successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Result of the database insert operation
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ship ID, Product ID and Received Quantity are required
+        "500":
+          description: Server error while inserting data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error inserting data
+    put:
+      tags:
+        - Inbound functions
+      summary: Update received quantity for a specific inbound shipment detail
+      description: Updates the `receivedQuantity` for a specific combination of `shipId` and `productId`.
+      operationId: updateInboundShipmentDetail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 101
+                productId:
+                  type: integer
+                  example: 2005
+                receivedQuantity:
+                  type: integer
+                  minimum: 0
+                  example: 25
+              required:
+                - shipId
+                - productId
+                - receivedQuantity
+      responses:
+        "200":
+          description: Received quantity successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Result of the update operation (e.g., affected row count or raw result)
+        "400":
+          description: Missing or invalid required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ship ID, Product ID and Received Quantity are required
+        "500":
+          description: Server error while updating data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating data
+
+  /api/inspection:
+    get:
+      tags:
+        - Stock functions
+      summary: Get information of all the inspections.
+      description: All records and fields in the inspection table.
+      operationId: getAllInspection
+      responses:
+        "200":
+          description: Successful fetching the information about inspections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inspection"
+    post:
+      tags:
+        - Stock functions
+      summary: Create a new inspection record
+      description: Adds a new inspection entry to the database for a specific stock item.
+      operationId: createInspection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stockId:
+                  type: integer
+                  example: 100
+                  description: ID of the stock item being inspected
+                defectQuantity:
+                  type: integer
+                  minimum: 0
+                  example: 2
+                  description: Quantity of defective items found during inspection
+                reason:
+                  type: string
+                  example: "Scratched surface"
+                  description: Optional reason or description of the defect
+              required:
+                - stockId
+                - defectQuantity
+      responses:
+        "201":
+          description: Inspection created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inspection"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Stock ID, Defect Quantity are required"
+        "500":
+          description: Server error while creating the inspection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error creating inspection"
+
+  /api/location:
+    get:
+      tags:
+        - Stock functions
+      summary: Get information of all the location bins within the WMS.
+      description: All records and fields in the location bins table. This table uses mock data, so we don't need to implement POST, PUT, DELETE methods.
+      operationId: getAllLocations
+      responses:
+        "200":
+          description: Successfully fetching the information about location bins.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationBin"
+
+  /api/order-transaction:
+    get:
+      tags:
+        - Stock functions
+      summary: Get the information of all order transactions
+      description: This is all the transactions (operations) performed on the the order.
+      operationId: getOrderTransactions
+      responses:
+        "200":
+        description: Successfully fetching the information of all order transactions
         content:
           application/json:
             schema:
               type: array
               items:
-                $ref: "#/components/schemas/User"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/User"
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /user/login:
-    get:
+                $ref: "#/components/schemas/OrderTransaction"
+    post:
       tags:
-        - user
-      summary: Logs user into the system.
-      description: Log into the system.
-      operationId: loginUser
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: false
-          schema:
-            type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: false
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          headers:
-            X-Rate-Limit:
-              description: calls per hour allowed by the user
-              schema:
-                type: integer
-                format: int32
-            X-Expires-After:
-              description: date in UTC when token expires
-              schema:
-                type: string
-                format: date-time
-          content:
-            application/xml:
-              schema:
-                type: string
-            application/json:
-              schema:
-                type: string
-        "400":
-          description: Invalid username/password supplied
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session.
-      description: Log user out of the system.
-      operationId: logoutUser
-      parameters: []
-      responses:
-        "200":
-          description: successful operation
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-  /user/{username}:
-    get:
-      tags:
-        - user
-      summary: Get user by user name.
-      description: Get user detail based on username.
-      operationId: getUserByName
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be fetched. Use user1 for testing
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/User"
-            application/xml:
-              schema:
-                $ref: "#/components/schemas/User"
-        "400":
-          description: Invalid username supplied
-        "404":
-          description: User not found
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-    put:
-      tags:
-        - user
-      summary: Update user resource.
-      description: This can only be done by the logged in user.
-      operationId: updateUser
-      parameters:
-        - name: username
-          in: path
-          description: name that need to be deleted
-          required: true
-          schema:
-            type: string
+        - Stock functions
+      summary: Create a new order transaction
+      description: Creates a new transaction record for a customer order. Note that transactions of type `Receive` or ones missing `refId` are handled by triggers and should not be inserted via this endpoint.
       requestBody:
-        description: Update an existent user in the store
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
-          application/xml:
-            schema:
-              $ref: "#/components/schemas/User"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/User"
+              type: object
+              required:
+                - customerOrderId
+                - transactionType
+              properties:
+                customerOrderId:
+                  type: integer
+                  example: 123
+                  description: The ID of the associated customer order
+                refId:
+                  type: integer
+                  nullable: true
+                  example: 456
+                  description: A reference ID for the transaction (thiss ref ID can be shipID ~ outbound or pickListID)
+                transactionType:
+                  type: string
+                  enum:
+                    - Pick and Pack
+                    - Ship
+                  example: "Pick and Pack"
+                  description: The type of transaction. Only allowing inserting Pick and Pack or Ship transactions. "Receive" transaction is automated.
+                transactionTime:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2025-04-24T12:34:56Z"
+                  description: Optional custom timestamp for the transaction
       responses:
-        "200":
-          description: successful operation
-        "400":
-          description: bad request
-        "404":
-          description: user not found
-        default:
-          description: Unexpected error
+        "201":
+          description: Order transaction created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Order transaction created successfully.
+                  data:
+                    type: object
+                    description: Insert result or record metadata
+        "400":
+          description: Bad request due to missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: customerOrderId and transactionType are required.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error while creating order transaction.
+
+  /api/outbound-shipment:
+    get:
+      tags:
+        - Outbound functions
+      summary: Get all overall information of all outbound shipments
+      description: |
+        Retrieves all outbound shipments with their relevant overall features.
+      responses:
+        "200":
+          description: A list of outbound shipments with related customer orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutboundShipment"
+    post:
+      tags:
+        - Outbound functions
+      summary: Create a new outbound shipment
+      description: Creates a new outbound shipment. All fields are optional and will use defaults if not provided.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipmentDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2025-04-24T10:00:00Z"
+                  description: Optional shipment date. Defaults to current time.
+                carrier:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "UPS"
+                  description: Optional carrier name
+                trackingNumber:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "1Z1234567890"
+                  description: Optional tracking number. Must be unique if provided.
+      responses:
+        "200":
+          description: Shipment successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Outbound shipment created successfully.
+                  data:
+                    type: object
+                    example:
+                      insertId: 12
+        "500":
+          description: Internal server error while inserting data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error inserting data
+    put:
+      tags:
+        - Outbound functions
     delete:
       tags:
-        - user
-      summary: Delete user resource.
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: User deleted
-        "400":
-          description: Invalid username supplied
-        "404":
-          description: User not found
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
+        - Outbound functions
+
+  /api/picking-list:
+    tags:
+      - Stock functions
+
+  /api/product:
+    tags:
+      - Stock functions
+
+  /api/purchase-order:
+    tags:
+      - Inbound functions
+
+  /api/stock:
+    tags:
+      - Stock functions
+
+  /api/stock-transaction:
+    tags:
+      - Stock functions
+
 components:
   schemas:
-    Order:
+    CustomerOrder:
       type: object
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        petId:
-          type: integer
-          format: int64
-          example: 198772
-        quantity:
-          type: integer
-          format: int32
-          example: 7
-        shipDate:
+        customerOrderID:
+          description: "The primary key of CustomerOrder"
+          oneOf:
+            - type: string
+            - type: integer
+          example: 1001
+        orderDate:
+          description: "The date the order was placed"
           type: string
           format: date-time
+          example: "2025-04-17 11:05:38"
         status:
+          description: "The current status of the order"
           type: string
-          description: Order Status
-          example: approved
           enum:
-            - placed
-            - approved
-            - delivered
-        complete:
-          type: boolean
-      xml:
-        name: order
-    Category:
+            - Pending
+            - Pick and Pack
+            - Shipped
+          example: "Pick and"
+        address:
+          description: "The address where the order should be placed"
+          type: string
+          example: "456 Oak Ave, Somewhere, SM 67890"
+    UpdateCustomerOrder:
       type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 1
-        name:
-          type: string
-          example: Dogs
-      xml:
-        name: category
-    User:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        username:
-          type: string
-          example: theUser
-        firstName:
-          type: string
-          example: John
-        lastName:
-          type: string
-          example: James
-        email:
-          type: string
-          example: john@email.com
-        password:
-          type: string
-          example: "12345"
-        phone:
-          type: string
-          example: "12345"
-        userStatus:
-          type: integer
-          description: User Status
-          format: int32
-          example: 1
-      xml:
-        name: user
-    Tag:
-      type: object
-      properties:
-        id:
-          type: integer
-          format: int64
-        name:
-          type: string
-      xml:
-        name: tag
-    Pet:
       required:
-        - name
-        - photoUrls
-      type: object
+        - orderId
+        - newStatus
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 10
-        name:
+        orderId:
+          description: "The key to search for the target customer order for updating."
+          oneOf:
+            - type: string
+            - type: integer
+
+          example: 1001
+
+        newStatus:
+          description: "The new status of the updating customer order."
           type: string
-          example: doggie
-        category:
-          $ref: "#/components/schemas/Category"
-        photoUrls:
-          type: array
-          xml:
-            wrapped: true
-          items:
-            type: string
-            xml:
-              name: photoUrl
-        tags:
-          type: array
-          xml:
-            wrapped: true
-          items:
-            $ref: "#/components/schemas/Tag"
-        status:
-          type: string
-          description: pet status in the store
           enum:
-            - available
-            - pending
-            - sold
-      xml:
-        name: pet
-    ApiResponse:
+            - Pending
+            - Pick and Pack
+            - Shipped
+          example: "Pick and Pack"
+    InsertCustomerOrder:
+      type: object
+      required:
+        - address
+      properties:
+        orderDate:
+          description: "The date the order was placed, if not given, take current timestamp as default"
+          type: string
+          format: date-time
+          example: "2025-04-17 11:05:38"
+
+        address:
+          description: "The address where the order should be placed"
+          type: string
+          example: "456 Oak Ave, Somewhere, SM 67890"
+    InboundShipment:
       type: object
       properties:
-        code:
+        shipID:
+          oneOf:
+            - type: string
+            - type: integer
+          description: The key of inbound shipment.
+        shipmentTime:
+          type: string
+          format: date-time
+          description: The date the shipment is inputted. If not given, take current timestamp as default.
+    InboundShipmentDetails:
+      type: object
+      properties:
+        shipId:
+          oneOf:
+            - type: string
+            - type: integer
+          description: The key of inbound shipment
+        inboundShipmentDetails:
+          type: object
+          properties:
+            productId:
+              oneOf:
+                - type: string
+                - type: integer
+              description: Foreign key referencing Product.productId.
+            receivedQuantity:
+              type: integer
+              minimum: 0
+              description: Quantity received. Must be >= 0.
+              example: 50
+            orderedQuantity:
+              type: integer
+              minimum: 0
+              description: Quantity ordered in PO. Must be >= 0.
+              example: 55
+        purchaseOrderIds:
+          type: array
+          items:
+            type: integer
+          example: [1001, 1002, 1003]
+    Inspection:
+      type: object
+      properties:
+        inspectID:
           type: integer
           format: int32
-        type:
+          description: Unique ID of the inspection (auto-incremented)
+          example: 1
+        stockID:
+          type: integer
+          format: int32
+          description: ID of the related stock item
+          example: 101
+        inspectDate:
           type: string
-        message:
+          format: date-time
+          description: Date and time of the inspection
+          example: "2025-04-24T08:30:00Z"
+        defectQuantity:
+          type: integer
+          format: int32
+          description: Number of defective items found (must be >= 0)
+          minimum: 0
+          example: 3
+        reason:
           type: string
-      xml:
-        name: "##default"
+          description: Description or reason for the defect, if any
+          example: "Packaging damage"
+    LocationBin:
+      type: object
+      properties:
+        locId:
+          type: integer
+          format: int32
+          description: Unique identifier for the location bin
+          example: 1
+        aisle:
+          type: string
+          description: Aisle label or number
+          example: "A5"
+        section:
+          type: string
+          description: Section within the aisle
+          example: "S3"
+        shelf:
+          type: string
+          description: Shelf within the section
+          example: "Top"
+        capacity:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Maximum number of items the bin can hold
+          example: 100
+      required:
+        - locId
+        - capacity
+    OrderTransaction:
+      type: object
+      required:
+        - transactionId
+        - customerOrderId
+        - transactionType
+      properties:
+        transactionId:
+          type: integer
+          format: int32
+          description: Auto-incremented primary key
+          example: 1
+        customerOrderId:
+          type: integer
+          format: int32
+          description: Foreign key referencing CustomerOrder.customerOrderId
+          example: 101
+        refId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Optional reference ID
+          example: 5001
+        transactionTime:
+          type: string
+          format: date-time
+          description: Timestamp of the transaction
+          example: "2025-04-24T15:30:00Z"
+        transactionType:
+          type: string
+          enum:
+            - Receive
+            - Pick and Pack
+            - Ship
+          description: Type of transaction
+          example: "Receive"
+    OutboundShipment:
+      type: object
+      required:
+        - shipmentId
+      properties:
+        shipmentId:
+          type: integer
+          format: int32
+          description: Auto-incremented primary key for the shipment
+          example: 1
+        shipmentDate:
+          type: string
+          format: date-time
+          description: Date and time the shipment was created
+          example: "2025-04-24T15:30:00Z"
+        carrier:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Name of the carrier handling the shipment
+          example: "DHL Express"
+        trackingNumber:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Unique tracking number for the shipment
+          example: "1Z9999999999999999"
+
     Error:
       type: object
       properties:
-        code:
+        status:
           type: string
+          example: 500
         message:
           type: string
+          example: "Unexpected Error"
       required:
-        - code
+        - status
         - message
-  requestBodies:
-    Pet:
-      description: Pet object that needs to be added to the store
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/Pet"
-        application/xml:
-          schema:
-            $ref: "#/components/schemas/Pet"
-    UserArray:
-      description: List of user object
-      content:
-        application/json:
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/User"
-  securitySchemes:
-    petstore_auth:
-      type: oauth2
-      flows:
-        implicit:
-          authorizationUrl: https://petstore3.swagger.io/oauth/authorize
-          scopes:
-            "write:pets": modify pets in your account
-            "read:pets": read your pets
-    api_key:
-      type: apiKey
-      name: api_key
-      in: header

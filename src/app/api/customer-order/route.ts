@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       orderDate: orderDate,
       address: address,
     });
-    return NextResponse.json(newOrder, {});
+    return NextResponse.json(newOrder, { status: 201 });
   } catch (error) {
     console.error("Error inserting data:", error);
     return NextResponse.json(
@@ -43,7 +43,7 @@ export async function PUT(request: NextRequest) {
       })
       .where(eq(customerOrder.customerOrderId, orderId));
     return NextResponse.json(updatedOrder, {
-      status: 200,
+      status: 201,
     });
   } catch (error) {
     console.error("Error updating data:", error);

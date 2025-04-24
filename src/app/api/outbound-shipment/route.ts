@@ -14,12 +14,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { shipmentDate, carrier, trackingNumber } = body;
-  if (!shipmentDate || !carrier || !trackingNumber) {
-    return NextResponse.json(
-      { message: "Missing required fields" },
-      { status: 400 }
-    );
-  }
+
   try {
     const newOutboundShipment = await db.insert(outboundShipment).values({
       shipmentDate: shipmentDate,
@@ -39,7 +34,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const body = await request.json();
   const { shipmentId, shipmentDate, carrier, trackingNumber } = body;
-  if (!shipmentId || !carrier || !trackingNumber || !shipmentDate) {
+  if (!shipmentId) {
     return NextResponse.json(
       { message: "Missing required fields" },
       { status: 400 }

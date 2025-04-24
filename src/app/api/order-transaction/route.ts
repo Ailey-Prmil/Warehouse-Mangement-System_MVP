@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-  if (transactionType.toLower() == "receive" || !refId) {
+  if (transactionType.toLowerCase() == "receive" || !refId) {
     return NextResponse.json(
       {
         message:

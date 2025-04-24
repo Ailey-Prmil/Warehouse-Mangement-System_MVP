@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-  if (transactionType.toLower() == "remove") {
+  if (transactionType.toLowerCase() == "remove") {
     return NextResponse.json(
       {
         message:

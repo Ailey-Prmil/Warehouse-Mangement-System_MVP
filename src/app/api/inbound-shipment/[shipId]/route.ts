@@ -17,7 +17,7 @@ export async function GET(
   request: NextRequest,
   { params }: InboundShipIdParams
 ) {
-  const shipId = Number(params.shipId);
+  const shipId = await Number(params.shipId);
 
   const purchaseOrders = await db
     .select({
