@@ -40,14 +40,21 @@ export async function PUT(request: NextRequest) {
       { status: 400 }
     );
   }
+  const updateData: Record<string, string> = {};
+  if (shipmentDate !== undefined) updateData.shipmentDate = shipmentDate;
+  if (carrier !== undefined) updateData.carrier = carrier;
+  if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
+
+  if (Object.keys(updateData).length === 0) {
+    return NextResponse.json(
+      { message: "No fields provided to update." },
+      { status: 400 }
+    );
+  }
   try {
     const updatedShipment = await db
       .update(outboundShipment)
-      .set({
-        shipmentDate: shipmentDate,
-        carrier: carrier,
-        trackingNumber: trackingNumber,
-      })
+      .set(updateData)
       .where(eq(outboundShipment.shipmentId, shipmentId));
     return NextResponse.json(updatedShipment, { status: 200 });
   } catch (error) {
