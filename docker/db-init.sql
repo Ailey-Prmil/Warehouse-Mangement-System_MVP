@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS Product (
-    ProductID INT PRIMARY KEY,
+    ProductID INT PRIMARY KEY AUTO_INCREMENT,
     Name VARCHAR(255) NOT NULL,
     SKU VARCHAR(100) UNIQUE NOT NULL,
     UnitOfMeasure VARCHAR(50),
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS Product (
 
 CREATE TABLE IF NOT EXISTS CustomerOrder ( -- Customize for Warehouse usage
     -- Add Shipment ID
-    CustomerOrderID INT PRIMARY KEY,
+    CustomerOrderID INT PRIMARY KEY AUTO_INCREMENT,
     OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Status ENUM('Pending', 'Pick and Pack', 'Shipped') NOT NULL DEFAULT 'Pending',
     Address VARCHAR(100)
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrderDetail ( -- Only care about quantity (no
 );
 
 CREATE TABLE IF NOT EXISTS LocationBin (
-    LocID INT PRIMARY KEY,
+    LocID INT PRIMARY KEY AUTO_INCREMENT,
     Aisle VARCHAR(50),
     Section VARCHAR(50),
     Shelf VARCHAR(50),
