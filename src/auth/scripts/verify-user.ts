@@ -1,8 +1,8 @@
-import { getUser, comparePassword, generateToken } from '../utils/auth-utils';
+import { getUser, comparePassword, generateTokens } from '../utils/auth-utils';
 import { AuthResult } from '../utils/types';
 
 /**
- * Verify user credentials and generate JWT token if successful
+ * Verify user credentials and generate JWT tokens if successful
  */
 async function verifyUser(username: string, password: string): Promise<AuthResult> {
   try {
@@ -39,17 +39,20 @@ async function verifyUser(username: string, password: string): Promise<AuthResul
       };
     }
     
-    // Generate JWT token
-    const token = generateToken(user.username);
+    // Generate JWT tokens
+    const { accessToken, refreshToken } = await generateTokens(user.username);
     
     console.log('Authentication successful');
     console.log(`User: ${username}`);
-    console.log(`JWT: ${token}`);
+    console.log(`Access Token: ${accessToken}`);
+    console.log(`Refresh Token: ${refreshToken}`);
     
     return {
       success: true,
       message: 'Authentication successful',
-      token
+      accessToken,
+      refreshToken,
+      token: accessToken // For backward compatibility
     };
   } catch (error) {
     console.error('Error during verification:', error);
@@ -73,6 +76,9 @@ if (require.main === module) {
   const password = args[1];
   
   verifyUser(username, password)
+    .then(result => {
+      console.log(JSON.stringify(result, null, 2));
+    })
     .catch(err => {
       console.error('Failed to verify user:', err);
       process.exit(1);
