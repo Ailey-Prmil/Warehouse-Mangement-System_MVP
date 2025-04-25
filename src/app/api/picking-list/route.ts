@@ -27,12 +27,16 @@ export async function POST() {
 export async function DELETE(request: NextRequest) {
   const body = await request.json();
   const { picklistId } = body.picklistId;
-
+  if (!picklistId)
+    return NextResponse.json(
+      { message: "Missing picklistId" },
+      { status: 400 }
+    );
   try {
     const deletedPickingList = await db
       .delete(pickingList)
       .where(eq(pickingList.picklistId, picklistId));
-    return NextResponse.json(deletedPickingList, { status: 200 });
+    return NextResponse.json(deletedPickingList, { status: 201 });
   } catch (error) {
     console.error("Error deleting picking list: ", error);
     return NextResponse.json(
@@ -56,7 +60,7 @@ export async function PUT(request: NextRequest) {
         } // Add other fields to update as needed
       )
       .where(eq(pickingList.picklistId, picklistId));
-    return NextResponse.json(updatedPickingList, { status: 200 });
+    return NextResponse.json(updatedPickingList, { status: 201 });
   } catch (error) {
     console.error("Error updating picking list: ", error);
     return NextResponse.json(
