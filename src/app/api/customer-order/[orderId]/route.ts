@@ -14,12 +14,12 @@ type OrderIdParams = {
 export async function GET(request: NextRequest, { params }: OrderIdParams) {
   const orderId = Number(params.orderId);
 
-  if (!orderId) {
-    return NextResponse.json(
-      { message: "Order ID is required" },
-      { status: 400 }
-    );
-  }
+  // if (!orderId) {
+  //   return NextResponse.json(
+  //     { message: "Order ID is required" },
+  //     { status: 400 }
+  //   );
+  // }
 
   try {
     const orderDetails = await db

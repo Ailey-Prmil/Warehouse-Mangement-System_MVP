@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       // po_id is auto generated
       shipId: shipId,
     });
-    return NextResponse.json(newPurchasingOrder, {});
+    return NextResponse.json(newPurchasingOrder, { status: 201 });
   } catch (error) {
     console.error("Error inserting data:", error);
     return NextResponse.json(
@@ -44,7 +44,7 @@ export async function PUT(request: NextRequest) {
       })
       .where(eq(purchaseOrder.poId, poId));
     return NextResponse.json(updatedOrder, {
-      status: 200,
+      status: 201,
     });
   } catch (error) {
     console.error("Error updating data:", error);

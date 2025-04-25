@@ -866,20 +866,265 @@ paths:
                 $ref: "#/components/schemas/Error"
 
   /api/purchase-order:
-    tags:
-      - Inbound functions
+    get:
+      tags:
+        - Inbound functions
+      summary: Get all available purchase orders
+      description: Get all information about all available purchase orders
+      operationId: getAllPurchaseOrders
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PurchaseOrder"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Inbound functions
+      summary: Add a new purchase order to WMS.
+      description: Insert a new purchase order record into the system.
+      operationId: addPurchaseOrder
+      requestBody:
+        description: Create a new purchase order
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  nullable: true
+
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+
+        "500":
+          description: Error inserting data
+          schema:
+            $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Inbound functions
+      summary: Update the shipId of the purchase order.
+      description: All other field of purchase order should be static (out of scope of a WMS). This function should of limited use as it should be out of WMS scope.
+      operationId: updatePurchaseOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: true
+              properties:
+                poId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                shipId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                required:
+                  - poId
+                  - shipId
+
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+
+        "500":
+          description: Error updating data
+          schema:
+            $ref: "#/components/schemas/Error"
 
   /api/purchase-order/{poId}:
-    tags:
-      - Inbound functions
+    get:
+      summary: Get the details of each purchase order
+      description: This endpoint provides data about the details of purchase order including related inbound shipment and all product details within the purchase order. Pay attention to align this details data with those in the inbound shipment.
+      tags:
+        - Inbound functions
+      operationId: getPurchaseOrderDetails
+      parameters:
+        - name: poId
+          in: path
+          description: The key ID used to find target purchase order.
+          required: true
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        "200":
+          description: successfully fetching data of customer order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  poId:
+                    description: "The primary key of CustomerOrder"
+                    oneOf:
+                      - type: string
+                      - type: integer
+                    example: 401
+                  shipId:
+                    description: The Id of the shipment of relevant purchase order.
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          description: "The Id of the product included in a customer order."
+                          type: integer
+                          example: 101
+                        quantity:
+                          description: "The quantity of each product in the order."
+                          type: integer
+                          example: 30
+
+        "404":
+          description: Invalid orderId value
+          example: No order found with ID 10003
+        "500":
+          description: Error fetching data
 
   /api/stock:
-    tags:
-      - Stock functions
+    get:
+      tags:
+        - Stock functions
+      summary: Get all available stock information
+      description: Get all general information about all available stock.
+      operationId: getAllStocks
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Stock"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/stock-transaction:
-    tags:
-      - Stock functions
+    get:
+      tags:
+        - Stock functions
+      summary: Get all stock transactions within the WMS
+      description: Get all the relevant stock transactions of different type (Store, Pick and Remove)
+      operationId: getStockTransactions
+      responses:
+        "200":
+          description: Successfully fetching the information of all stock transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockTransaction"
+    post:
+      tags:
+        - Stock functions
+      summary: Create a new order transaction
+      description: Creates a new transaction record for a customer order. Note that transactions of type `remove` are handled by triggers and should not be inserted via this endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - locId
+                - quantity
+              properties:
+                productId:
+                  type: integer
+                  example: 1
+                  description: The ID of the associated products.
+                locId:
+                  type: integer
+                  example: 4
+                  description: The ID of the associated products.
+
+                refId:
+                  type: integer
+                  nullable: true
+                  example: 456
+                  description: A reference ID for the transaction (this ref ID can be pickListID)
+                transactionType:
+                  type: string
+                  enum:
+                    - Store
+                    - Pick
+                  example: "Pick"
+                  description: The type of transaction. Only allowing inserting Pick transactions. `Remove` transaction is automated.
+                quantity:
+                  type: integer
+                  example: 50
+                  description: Quantity of the stock in that transaction
+      responses:
+        "201":
+          description: Stock transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Stock transaction created successfully.
+                  data:
+                    schema:
+                      $ref: "#/components/schemas/StockTransaction"
+                    description: Insert result or record metadata
+        "400":
+          description: Bad request due to missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: productId, locId and transactionType are required.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error while creating order transaction.
 
 components:
   schemas:
@@ -1167,7 +1412,96 @@ components:
         - productId
         - name
         - sku
+    PurchaseOrder:
+      type: object
+      properties:
+        poId:
+          type: integer
+          example: 1
+          description: Auto-incremented primary key for the purchase order.
+        shipId:
+          type: integer
+          example: 1001
+          description: Foreign key referencing the shipment (inboundShipment.shipId).
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-04-25T14:35:00Z"
+          description: Timestamp when the purchase order was created.
+      required:
+        - shipId
+    Stock:
+      type: object
+      properties:
+        stockId:
+          description: The primary key of stock ID.
+          oneOf:
+            - type: integer
+            - type: string
+        productId:
+          description: The productID of the stock
+          oneOf:
+            - type: integer
+            - type: string
+        locId:
+          description: The locId of the stock
+          oneOf:
+            - type: integer
+            - type: string
+        quantity:
+          description: The quantity that is currently available in the warehouse.
+          type: integer
 
+        lastUpdated:
+          description: The datetime this particular stock is last updated
+          type: string
+          format: date-time
+    StockTransaction:
+      type: object
+      required:
+        - transactionId
+        - productId
+        - locId
+        - transactionType
+      properties:
+        transactionId:
+          type: integer
+          format: int32
+          description: Auto-incremented primary key
+          example: 1
+        productId:
+          type: integer
+          format: int32
+          description: Foreign key referencing Product.productId
+          example: 101
+        locId:
+          type: integer
+          format: int32
+          description: Foreign key referencing location.LocId
+          example: 2
+        quantity:
+          type: integer
+          format: int64
+          description: The quantity of product that is related to certain stock transactions.
+        refId:
+          type: integer
+          format: int32
+          nullable: true
+          description: RefId can be referenced to inspectionId (for remove transaction type) or picklistId (for pick transaction)
+          example: 5001
+        transactionTime:
+          type: string
+          format: date-time
+          description: Timestamp of the transaction
+          example: "2025-04-24T15:30:00Z"
+        transactionType:
+          type: string
+          enum:
+            - Store
+            - Pick
+            - Remove
+          description: Type of transaction
+          example: "Pick"
     Error:
       type: object
       properties:

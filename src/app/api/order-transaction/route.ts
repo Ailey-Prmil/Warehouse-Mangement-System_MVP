@@ -30,18 +30,18 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const newStockTransaction = await db.insert(orderTransaction).values({
+    const newOrderTransaction = await db.insert(orderTransaction).values({
       customerOrderId: customerOrderId,
       transactionType: transactionType,
       refId: refId,
       transactionTime: transactionTime || null,
     });
 
-    return NextResponse.json(newStockTransaction, { status: 201 });
+    return NextResponse.json(newOrderTransaction, { status: 201 });
   } catch (error) {
-    console.error("Error creating inspection:", error);
+    console.error("Error creating order transaction:", error);
     return NextResponse.json(
-      { message: "Error creating inspection" },
+      { message: "Error creating order transaction" },
       { status: 500 }
     );
   }
