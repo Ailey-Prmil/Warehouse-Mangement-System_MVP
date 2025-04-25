@@ -604,19 +604,272 @@ paths:
     put:
       tags:
         - Outbound functions
+      summary: Update an outbound shipment
+      description: |
+        Updates one or more fields of an existing outbound shipment. 
+        Only the provided fields in the request body will be updated. 
+        Fields not included will remain unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - shipmentId
+              properties:
+                shipmentId:
+                  type: integer
+                  example: 1
+                  description: The ID of the shipment to update
+                shipmentDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2025-04-24T15:30:00Z"
+                  description: Optional updated shipment date
+                carrier:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "DHL"
+                  description: Optional updated carrier name
+                trackingNumber:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "TRACK987654321"
+                  description: Optional updated tracking number
+      responses:
+        "200":
+          description: Shipment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Outbound shipment updated successfully.
+                  updated:
+                    type: object
+                    example:
+                      affectedRows: 1
+        "400":
+          description: Bad request (e.g., missing shipmentId or no fields to update)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No fields provided to update.
+        "500":
+          description: Internal server error while updating shipment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating data
     delete:
       tags:
         - Outbound functions
+      summary: Delete an outbound shipment
+      description: |
+        Deletes the outbound shipment with the specified shipmentId. 
+        If the shipment does not exist or the shipmentId is missing, an error will be returned.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - shipmentId
+              properties:
+                shipmentId:
+                  type: integer
+                  example: 1
+                  description: The ID of the shipment to delete
+      responses:
+        "200":
+          description: Shipment successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Shipment deleted successfully.
+                  deleted:
+                    type: object
+                    example:
+                      affectedRows: 1
+        "400":
+          description: Missing shipmentId
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Shipment ID is required.
+        "500":
+          description: Internal server error while deleting shipment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error deleting data
 
   /api/picking-list:
-    tags:
-      - Stock functions
+    get:
+      tags:
+        - Stock functions
+      summary: Get all available picking list
+      description: Get all information about all available picking list (time created and time done)
+      operationId: getAllPickingList
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PickingList"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Stock functions
+      summary: Add a picking list to WMS.
+      description: Create a new picking list. There is only 3 fields in the picking list. They all can be auto-generated by the database or nullable (modified later). Hence, no need for body request.
+      operationId: addPickingList
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PickingList"
+
+        "500":
+          description: Failed to create picking list
+          schema:
+            $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Stock functions
+      summary: Update the doneAt field within the picking list.
+      description: There are only 2 fields in the picking list, createdAt is auto-generated while doneAt is meant to be updated. (fields can be added later)
+      operationId: updatePickingList
+      requestBody:
+        content:
+          required: true
+          application/json:
+            schema:
+              type: object
+              properties:
+                picklistId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  example: 1011
+                doneAt:
+                  type: string
+                  format: date-time
+                  example: "2025-04-28T14:00:00Z"
+              required:
+                - picklistId
+                - doneAt
+
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PickingList"
+
+        "500":
+          description: Failed to update picking list
+          schema:
+            $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Stock functions
+      summary: Delete a picking list by picklistId
+      operationId: deletePickingList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 1011
+              required:
+                - shipId
+      responses:
+        "200":
+          description: Picking List deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PickingList"
+        "400":
+          description: Invalid or missing pickListId
+        # "404":
+        #   description: No shipment found with given ID
+        "500":
+          description: Internal server error during deletion
 
   /api/product:
-    tags:
-      - Stock functions
+    get:
+      tags:
+        - Stock functions
+      summary: Get all available products
+      description: Get all general information about all available products.
+      operationId: getAllProducts
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
   /api/purchase-order:
+    tags:
+      - Inbound functions
+
+  /api/purchase-order/{poId}:
     tags:
       - Inbound functions
 
@@ -856,6 +1109,64 @@ components:
           nullable: true
           description: Unique tracking number for the shipment
           example: "1Z9999999999999999"
+    PickingList:
+      type: object
+      properties:
+        picklistId:
+          type: integer
+          example: 1
+          description: Unique identifier for the picking list. Auto increment value.
+        generatedAt:
+          type: string
+          format: date-time
+          example: "2025-04-24T12:00:00Z"
+          description: Timestamp when the picking list was generated. Default to now().
+        doneAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-04-25T14:00:00Z"
+          description: Timestamp when the picking list was completed (nullable)
+      required:
+        - picklistId
+    Product:
+      type: object
+      properties:
+        productId:
+          type: integer
+          example: 101
+          description: Unique identifier for the product
+        name:
+          type: string
+          maxLength: 255
+          example: "Wireless Mouse"
+          description: Name of the product
+        sku:
+          type: string
+          maxLength: 100
+          example: "WM-12345"
+          description: Stock Keeping Unit (SKU) of the product
+        unitOfMeasure:
+          type: string
+          maxLength: 50
+          nullable: true
+          example: "pcs"
+          description: Unit of measurement for the product (nullable)
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-04-24T12:00:00Z"
+          description: Timestamp when the product was created
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-04-25T15:00:00Z"
+          description: Timestamp when the product was last updated (nullable)
+      required:
+        - productId
+        - name
+        - sku
 
     Error:
       type: object
