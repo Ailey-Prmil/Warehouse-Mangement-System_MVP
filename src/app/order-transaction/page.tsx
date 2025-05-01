@@ -1,15 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Edit, Eye, Search, Trash } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Edit, Eye, Search, Trash } from "lucide-react";
 
 export default function OrderTransactionPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Reduced mock data
   const transactions = [
@@ -20,22 +27,30 @@ export default function OrderTransactionPage() {
       TransactionTime: "2023-06-20 10:15:30",
       TransactionType: "Order Placed",
     },
-  ]
+  ];
 
   const filteredTransactions = transactions.filter(
     (transaction) =>
-      transaction.TransactionID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.CustomerOrderID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.TransactionID.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      ) ||
+      transaction.CustomerOrderID.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      ) ||
       transaction.RefID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.TransactionType.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      transaction.TransactionType.toLowerCase().includes(
+        searchTerm.toLowerCase()
+      )
+  );
 
   return (
     <div className="container mx-auto py-6 pl-6">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Order Transactions</h1>
-          <p className="text-muted-foreground">Track order status changes and activities</p>
+          <p className="text-muted-foreground">
+            Track order status changes and activities
+          </p>
         </div>
         <Button asChild>
           <Link href="/order-transaction/create">Create</Link>
@@ -76,7 +91,9 @@ export default function OrderTransactionPage() {
             <TableBody>
               {filteredTransactions.map((transaction) => (
                 <TableRow key={transaction.TransactionID}>
-                  <TableCell className="font-medium">{transaction.TransactionID}</TableCell>
+                  <TableCell className="font-medium">
+                    {transaction.TransactionID}
+                  </TableCell>
                   <TableCell>
                     <Link
                       href={`/customer-order-detail?id=${transaction.CustomerOrderID}`}
@@ -91,18 +108,26 @@ export default function OrderTransactionPage() {
                   <TableCell>
                     <div className="flex justify-center gap-2">
                       <Button asChild size="icon" variant="ghost">
-                        <Link href={`/customer-order-detail?id=${transaction.CustomerOrderID}`}>
+                        <Link
+                          href={`/customer-order-detail?id=${transaction.CustomerOrderID}`}
+                        >
                           <Eye className="h-4 w-4" />
                           <span className="sr-only">View Order</span>
                         </Link>
                       </Button>
                       <Button asChild size="icon" variant="ghost">
-                        <Link href={`/order-transaction/update?id=${transaction.TransactionID}`}>
+                        <Link
+                          href={`/order-transaction/update?id=${transaction.TransactionID}`}
+                        >
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Link>
                       </Button>
-                      <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-700">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="text-red-500 hover:text-red-700"
+                      >
                         <Trash className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
                       </Button>
@@ -122,5 +147,5 @@ export default function OrderTransactionPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

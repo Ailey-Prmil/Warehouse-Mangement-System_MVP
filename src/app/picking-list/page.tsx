@@ -1,14 +1,21 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 export default function PickingListPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Mock data for picking lists
   const pickingLists = [
@@ -27,18 +34,20 @@ export default function PickingListPage() {
       GeneratedAt: "2023-07-01 08:30:00",
       DoneAt: null, // Not completed yet
     },
-  ]
+  ];
 
   const filteredPickingLists = pickingLists.filter((list) =>
-    list.PicklistID.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+    list.PicklistID.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto py-6 pl-6">
       <div className="mb-8">
         <div>
           <h1 className="text-3xl font-bold">Picking Lists</h1>
-          <p className="text-muted-foreground">Manage order picking operations</p>
+          <p className="text-muted-foreground">
+            Manage order picking operations
+          </p>
         </div>
       </div>
 
@@ -74,11 +83,19 @@ export default function PickingListPage() {
             <TableBody>
               {filteredPickingLists.map((list) => (
                 <TableRow key={list.PicklistID}>
-                  <TableCell className="font-medium">{list.PicklistID}</TableCell>
+                  <TableCell className="font-medium">
+                    {list.PicklistID}
+                  </TableCell>
                   <TableCell>{list.GeneratedAt}</TableCell>
                   <TableCell>{list.DoneAt || "-"}</TableCell>
                   <TableCell>
-                    <Badge className={list.DoneAt ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
+                    <Badge
+                      className={
+                        list.DoneAt
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }
+                    >
                       {list.DoneAt ? "Completed" : "Pending"}
                     </Badge>
                   </TableCell>
@@ -96,5 +113,5 @@ export default function PickingListPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

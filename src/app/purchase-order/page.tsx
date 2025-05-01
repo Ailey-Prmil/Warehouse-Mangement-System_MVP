@@ -1,15 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Eye, Search } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Eye, Search } from "lucide-react";
 
 export default function PurchaseOrderPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Reduced mock data
   const purchaseOrders = [
@@ -18,19 +25,21 @@ export default function PurchaseOrderPage() {
       ShipID: "SH001",
       CreateAt: "2023-06-15",
     },
-  ]
+  ];
 
   const filteredOrders = purchaseOrders.filter(
     (order) =>
       order.PO_ID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.ShipID.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      order.ShipID.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto py-6 pl-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Purchase Orders</h1>
-        <p className="text-muted-foreground">Manage purchase orders from suppliers</p>
+        <p className="text-muted-foreground">
+          Manage purchase orders from suppliers
+        </p>
       </div>
 
       <Card className="mb-6">
@@ -92,5 +101,5 @@ export default function PurchaseOrderPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

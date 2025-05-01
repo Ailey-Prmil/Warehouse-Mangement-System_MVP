@@ -1,7 +1,7 @@
-import Link from "next/link"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Eye, Plus } from "lucide-react"
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Eye, Plus } from "lucide-react";
 
 export default function ShipmentsPage() {
   // Minimal mock data
@@ -27,7 +27,7 @@ export default function ShipmentsPage() {
       status: "Pending",
       items: 5,
     },
-  ]
+  ];
 
   return (
     <div className="container mx-auto py-8">
@@ -36,7 +36,10 @@ export default function ShipmentsPage() {
           <h1 className="text-3xl font-bold">Shipments</h1>
           <p className="text-gray-500">Manage inbound and outbound shipments</p>
         </div>
-        <Link href="/shipments/create" className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+        <Link
+          href="/shipments/create"
+          className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
           <Plus className="mr-2 inline-block h-4 w-4" />
           Create Shipment
         </Link>
@@ -57,12 +60,17 @@ export default function ShipmentsPage() {
               <div>Actions</div>
             </div>
             {shipments.map((shipment) => (
-              <div key={shipment.shipmentId} className="grid grid-cols-6 border-b p-3 text-sm">
+              <div
+                key={shipment.shipmentId}
+                className="grid grid-cols-6 border-b p-3 text-sm"
+              >
                 <div>{shipment.shipmentId}</div>
                 <div>
                   <Badge
                     className={
-                      shipment.type === "Inbound" ? "bg-green-100 text-green-800" : "bg-blue-100 text-blue-800"
+                      shipment.type === "Inbound"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-blue-100 text-blue-800"
                     }
                   >
                     {shipment.type}
@@ -75,8 +83,8 @@ export default function ShipmentsPage() {
                       shipment.status === "Received"
                         ? "bg-green-100 text-green-800"
                         : shipment.status === "Shipped"
-                          ? "bg-blue-100 text-blue-800"
-                          : "bg-yellow-100 text-yellow-800"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-yellow-100 text-yellow-800"
                     }
                   >
                     {shipment.status}
@@ -84,7 +92,10 @@ export default function ShipmentsPage() {
                 </div>
                 <div>{shipment.items}</div>
                 <div>
-                  <Link href={`/shipments/${shipment.shipmentId}`} className="flex items-center text-blue-600">
+                  <Link
+                    href={`/shipments/${shipment.shipmentId}`}
+                    className="flex items-center text-blue-600"
+                  >
                     <Eye className="mr-1 h-4 w-4" />
                     View
                   </Link>
@@ -95,5 +106,5 @@ export default function ShipmentsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

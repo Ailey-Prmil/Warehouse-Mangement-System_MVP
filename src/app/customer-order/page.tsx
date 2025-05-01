@@ -1,13 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Eye, Search } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Eye, Search } from "lucide-react";
 
 // Reduced mock data
 const customerOrders = [
@@ -19,16 +26,16 @@ const customerOrders = [
     items: 3,
     total: 149.97,
   },
-]
+];
 
 export default function CustomerOrderPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredOrders = customerOrders.filter(
     (order) =>
       order.customerOrderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.address.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      order.address.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto py-6 pl-6">
@@ -72,19 +79,23 @@ export default function CustomerOrderPage() {
             <TableBody>
               {filteredOrders.map((order) => (
                 <TableRow key={order.customerOrderId}>
-                  <TableCell className="font-medium">{order.customerOrderId}</TableCell>
+                  <TableCell className="font-medium">
+                    {order.customerOrderId}
+                  </TableCell>
                   <TableCell>{order.orderDate}</TableCell>
-                  <TableCell className="max-w-xs truncate">{order.address}</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {order.address}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       className={
                         order.status === "Delivered"
                           ? "bg-green-100 text-green-800 hover:bg-green-100"
                           : order.status === "Shipped"
-                            ? "bg-blue-100 text-blue-800 hover:bg-blue-100"
-                            : order.status === "Processing"
-                              ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                              : "bg-orange-100 text-orange-800 hover:bg-orange-100"
+                          ? "bg-blue-100 text-blue-800 hover:bg-blue-100"
+                          : order.status === "Processing"
+                          ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                          : "bg-orange-100 text-orange-800 hover:bg-orange-100"
                       }
                     >
                       {order.status}
@@ -95,7 +106,9 @@ export default function CustomerOrderPage() {
                   <TableCell>
                     <div className="flex justify-center">
                       <Button asChild size="icon" variant="ghost">
-                        <Link href={`/customer-order-detail?id=${order.customerOrderId}`}>
+                        <Link
+                          href={`/customer-order-detail?id=${order.customerOrderId}`}
+                        >
                           <Eye className="h-4 w-4" />
                           <span className="sr-only">View</span>
                         </Link>
@@ -109,5 +122,5 @@ export default function CustomerOrderPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

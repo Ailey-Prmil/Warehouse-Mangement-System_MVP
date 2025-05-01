@@ -1,13 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Edit, Search } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Edit, Search } from "lucide-react";
 
 // Reduced mock data
 const stockTransactions = [
@@ -21,26 +28,32 @@ const stockTransactions = [
     quantity: 20,
     transactionDate: "2023-06-15",
   },
-]
+];
 
 export default function StockTransactionPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   const filteredTransactions = stockTransactions.filter(
     (transaction) =>
-      transaction.transactionId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.transactionId
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       transaction.productId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      transaction.productName
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
       transaction.locId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.refId.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      transaction.refId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto py-6 pl-6">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Stock Transactions</h1>
-          <p className="text-muted-foreground">Manage stock movements in the warehouse</p>
+          <p className="text-muted-foreground">
+            Manage stock movements in the warehouse
+          </p>
         </div>
         <Button asChild>
           <Link href="/stock-transaction/create">Create</Link>
@@ -83,7 +96,9 @@ export default function StockTransactionPage() {
             <TableBody>
               {filteredTransactions.map((transaction) => (
                 <TableRow key={transaction.transactionId}>
-                  <TableCell className="font-medium">{transaction.transactionId}</TableCell>
+                  <TableCell className="font-medium">
+                    {transaction.transactionId}
+                  </TableCell>
                   <TableCell>
                     {transaction.productId} - {transaction.productName}
                   </TableCell>
@@ -105,7 +120,9 @@ export default function StockTransactionPage() {
                   <TableCell>
                     <div className="flex justify-center">
                       <Button asChild size="icon" variant="ghost">
-                        <Link href={`/stock-transaction/update?id=${transaction.transactionId}`}>
+                        <Link
+                          href={`/stock-transaction/update?id=${transaction.transactionId}`}
+                        >
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Link>
@@ -119,5 +136,5 @@ export default function StockTransactionPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

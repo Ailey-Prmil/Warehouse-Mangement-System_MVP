@@ -1,15 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
-import { Edit, Eye, Search } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Edit, Eye, Search } from "lucide-react";
 
 export default function OutboundShipmentPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Reduced mock data
   const shipments = [
@@ -19,21 +26,23 @@ export default function OutboundShipmentPage() {
       Carrier: "FedEx",
       TrackingNumber: "FDX123456789",
     },
-  ]
+  ];
 
   const filteredShipments = shipments.filter(
     (shipment) =>
       shipment.ShipmentID.toLowerCase().includes(searchTerm.toLowerCase()) ||
       shipment.Carrier.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      shipment.TrackingNumber.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      shipment.TrackingNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto py-6 pl-6">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Outbound Shipments</h1>
-          <p className="text-muted-foreground">Manage outgoing shipments to customers</p>
+          <p className="text-muted-foreground">
+            Manage outgoing shipments to customers
+          </p>
         </div>
         <Button asChild>
           <Link href="/outbound-shipment/create">Create</Link>
@@ -73,20 +82,26 @@ export default function OutboundShipmentPage() {
             <TableBody>
               {filteredShipments.map((shipment) => (
                 <TableRow key={shipment.ShipmentID}>
-                  <TableCell className="font-medium">{shipment.ShipmentID}</TableCell>
+                  <TableCell className="font-medium">
+                    {shipment.ShipmentID}
+                  </TableCell>
                   <TableCell>{shipment.ShipmentDate}</TableCell>
                   <TableCell>{shipment.Carrier}</TableCell>
                   <TableCell>{shipment.TrackingNumber}</TableCell>
                   <TableCell>
                     <div className="flex justify-center space-x-2">
                       <Button asChild size="icon" variant="ghost">
-                        <Link href={`/outbound-shipment/view?id=${shipment.ShipmentID}`}>
+                        <Link
+                          href={`/outbound-shipment/view?id=${shipment.ShipmentID}`}
+                        >
                           <Eye className="h-4 w-4" />
                           <span className="sr-only">View</span>
                         </Link>
                       </Button>
                       <Button asChild size="icon" variant="ghost">
-                        <Link href={`/outbound-shipment/update?id=${shipment.ShipmentID}`}>
+                        <Link
+                          href={`/outbound-shipment/update?id=${shipment.ShipmentID}`}
+                        >
                           <Edit className="h-4 w-4" />
                           <span className="sr-only">Edit</span>
                         </Link>
@@ -100,5 +115,5 @@ export default function OutboundShipmentPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
