@@ -96,7 +96,7 @@ export default function ProductPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="pl-6">Product ID</TableHead>
+                  <TableHead className="text-center">Product ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>SKU</TableHead>
                   <TableHead>Unit of Measure</TableHead>

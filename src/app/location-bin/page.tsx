@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,27 +16,49 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Eye, Search } from "lucide-react";
 
-// Reduced mock data
-const locationBins = [
-  {
-    locId: "L001",
-    aisle: "A1",
-    section: "S2",
-    shelf: "SH3",
-    capacity: 50,
-    used: 15,
-  },
-];
+// Define the LocationBin type to match the database schema
+interface LocationBin {
+  locId: string;
+  aisle: string;
+  section: string;
+  shelf: string;
+  capacity: number;
+  used: number;
+}
 
 export default function LocationBinPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [locationBins, setLocationBins] = useState<LocationBin[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch location bins from the API
+  useEffect(() => {
+    async function fetchLocationBins() {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/location");
+        if (!response.ok) {
+          throw new Error("Failed to fetch location bins");
+        }
+        const data: LocationBin[] = await response.json();
+        setLocationBins(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchLocationBins();
+  }, []);
 
   const filteredLocations = locationBins.filter(
     (location) =>
-      location.locId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       location.aisle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       location.section.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      location.shelf.toLowerCase().includes(searchTerm.toLowerCase())
+      location.shelf.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      location.locId.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -68,75 +90,93 @@ export default function LocationBinPage() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Location ID</TableHead>
-                <TableHead>Aisle</TableHead>
-                <TableHead>Section</TableHead>
-                <TableHead>Shelf</TableHead>
-                <TableHead>Capacity</TableHead>
-                <TableHead>Utilization</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLocations.map((location) => (
-                <TableRow key={location.locId}>
-                  <TableCell className="font-medium">
-                    {location.locId}
-                  </TableCell>
-                  <TableCell>{location.aisle}</TableCell>
-                  <TableCell>{location.section}</TableCell>
-                  <TableCell>{location.shelf}</TableCell>
-                  <TableCell>{location.capacity}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
-                        <div
-                          className={`h-full ${
-                            (location.used / location.capacity) * 100 < 50
-                              ? "bg-green-500"
-                              : (location.used / location.capacity) * 100 < 80
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                          }`}
-                          style={{
-                            width: `${
-                              (location.used / location.capacity) * 100
-                            }%`,
-                          }}
-                        />
-                      </div>
-                      <Badge
-                        className={
-                          (location.used / location.capacity) * 100 < 50
-                            ? "bg-green-100 text-green-800 hover:bg-green-100"
-                            : (location.used / location.capacity) * 100 < 80
-                            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                            : "bg-red-100 text-red-800 hover:bg-red-100"
-                        }
-                      >
-                        {Math.round((location.used / location.capacity) * 100)}%
-                      </Badge>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-center">
-                      <Button asChild size="icon" variant="ghost">
-                        <Link
-                          href={`/location-bin-detail?id=${location.locId}`}
-                        >
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
-                    </div>
-                  </TableCell>
+          {loading ? (
+            <div className="p-4 text-center">Loading...</div>
+          ) : error ? (
+            <div className="p-4 text-center text-red-600">{error}</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center">Location ID</TableHead>
+                  <TableHead>Aisle</TableHead>
+                  <TableHead>Section</TableHead>
+                  <TableHead>Shelf</TableHead>
+                  <TableHead>Capacity</TableHead>
+                  <TableHead>Utilization</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredLocations.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center">
+                      No location bins found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredLocations.map((location) => (
+                    <TableRow key={location.locId}>
+                      <TableCell className="text-center">
+                        {location.locId}
+                      </TableCell>
+                      <TableCell>{location.aisle}</TableCell>
+                      <TableCell>{location.section}</TableCell>
+                      <TableCell>{location.shelf}</TableCell>
+                      <TableCell>{location.capacity}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
+                            <div
+                              className={`h-full ${
+                                (location.used / location.capacity) * 100 < 50
+                                  ? "bg-green-500"
+                                  : (location.used / location.capacity) * 100 <
+                                    80
+                                  ? "bg-yellow-500"
+                                  : "bg-red-500"
+                              }`}
+                              style={{
+                                width: `${
+                                  (location.used / location.capacity) * 100
+                                }%`,
+                              }}
+                            />
+                          </div>
+                          <Badge
+                            className={
+                              (location.used / location.capacity) * 100 < 50
+                                ? "bg-green-100 text-green-800 hover:bg-green-100"
+                                : (location.used / location.capacity) * 100 < 80
+                                ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                                : "bg-red-100 text-red-800 hover:bg-red-100"
+                            }
+                          >
+                            {Math.round(
+                              (location.used / location.capacity) * 100
+                            )}
+                            %
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex justify-center">
+                          <Button asChild size="icon" variant="ghost">
+                            <Link
+                              href={`/location-bin-detail?id=${location.locId}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">View</span>
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
