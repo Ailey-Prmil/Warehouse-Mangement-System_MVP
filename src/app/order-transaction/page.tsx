@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,33 +15,89 @@ import {
 import { Input } from "@/components/ui/input";
 import { Edit, Eye, Search, Trash } from "lucide-react";
 
+// Define the OrderTransaction type to match the database schema
+interface OrderTransaction {
+  transactionId: string | number; // Allow number in case transactionId is numeric
+  customerOrderId: string | number;
+  refId: string | null;
+  transactionTime: string | null;
+  transactionType: string;
+}
+
 export default function OrderTransactionPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [transactions, setTransactions] = useState<OrderTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Reduced mock data
-  const transactions = [
-    {
-      TransactionID: "OT001",
-      CustomerOrderID: "CO001",
-      RefID: "REF001",
-      TransactionTime: "2023-06-20 10:15:30",
-      TransactionType: "Order Placed",
-    },
-  ];
+  // Fetch order transactions from the API
+  useEffect(() => {
+    async function fetchOrderTransactions() {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/order-transaction");
+        if (!response.ok) {
+          throw new Error("Failed to fetch order transactions");
+        }
+        const data: OrderTransaction[] = await response.json();
+        console.log("Fetched data:", data); // Log to inspect the response
+        setTransactions(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    }
 
-  const filteredTransactions = transactions.filter(
-    (transaction) =>
-      transaction.TransactionID.toLowerCase().includes(
-        searchTerm.toLowerCase()
-      ) ||
-      transaction.CustomerOrderID.toLowerCase().includes(
-        searchTerm.toLowerCase()
-      ) ||
-      transaction.RefID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      transaction.TransactionType.toLowerCase().includes(
-        searchTerm.toLowerCase()
-      )
-  );
+    fetchOrderTransactions();
+  }, []);
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    // Convert fields to strings and handle null/undefined
+    const transactionId = String(transaction.transactionId || "").toLowerCase();
+    const customerOrderId = String(
+      transaction.customerOrderId || ""
+    ).toLowerCase();
+    const refId = String(transaction.refId || "").toLowerCase();
+    const transactionType = String(
+      transaction.transactionType || ""
+    ).toLowerCase();
+    const search = searchTerm.toLowerCase();
+
+    return (
+      transactionId.includes(search) ||
+      customerOrderId.includes(search) ||
+      refId.includes(search) ||
+      transactionType.includes(search)
+    );
+  });
+
+  // Handle delete transaction
+  const handleDelete = async (transactionId: string | number) => {
+    if (!confirm("Are you sure you want to delete this transaction?")) return;
+
+    try {
+      const response = await fetch("/api/order-transaction", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ transactionId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete transaction");
+      }
+
+      // Update state to remove the deleted transaction
+      setTransactions((prev) =>
+        prev.filter((t) => t.transactionId !== transactionId)
+      );
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "An error occurred");
+    }
+  };
 
   return (
     <div className="container mx-auto py-6 pl-6">
@@ -77,73 +133,85 @@ export default function OrderTransactionPage() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Transaction ID</TableHead>
-                <TableHead>Customer Order ID</TableHead>
-                <TableHead>Reference ID</TableHead>
-                <TableHead>Transaction Time</TableHead>
-                <TableHead>Transaction Type</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTransactions.map((transaction) => (
-                <TableRow key={transaction.TransactionID}>
-                  <TableCell className="font-medium">
-                    {transaction.TransactionID}
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/customer-order-detail?id=${transaction.CustomerOrderID}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {transaction.CustomerOrderID}
-                    </Link>
-                  </TableCell>
-                  <TableCell>{transaction.RefID}</TableCell>
-                  <TableCell>{transaction.TransactionTime}</TableCell>
-                  <TableCell>{transaction.TransactionType}</TableCell>
-                  <TableCell>
-                    <div className="flex justify-center gap-2">
-                      <Button asChild size="icon" variant="ghost">
-                        <Link
-                          href={`/customer-order-detail?id=${transaction.CustomerOrderID}`}
-                        >
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View Order</span>
-                        </Link>
-                      </Button>
-                      <Button asChild size="icon" variant="ghost">
-                        <Link
-                          href={`/order-transaction/update?id=${transaction.TransactionID}`}
-                        >
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Link>
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredTransactions.length === 0 && (
+          {loading ? (
+            <div className="p-4 text-center">Loading...</div>
+          ) : error ? (
+            <div className="p-4 text-center text-red-600">{error}</div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No transactions found.
-                  </TableCell>
+                  <TableHead className="text-center">Transaction ID</TableHead>
+                  <TableHead>Customer Order ID</TableHead>
+                  <TableHead>Reference ID</TableHead>
+                  <TableHead>Transaction Time</TableHead>
+                  <TableHead>Transaction Type</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredTransactions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center">
+                      No transactions found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredTransactions.map((transaction) => (
+                    <TableRow key={String(transaction.transactionId)}>
+                      <TableCell className="text-center">
+                        {String(transaction.transactionId)}
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/customer-order-detail?id=${transaction.customerOrderId}`}
+                          className="text-blue-600 hover:underline"
+                        >
+                          {String(transaction.customerOrderId)}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{transaction.refId || "N/A"}</TableCell>
+                      <TableCell>
+                        {transaction.transactionTime || "N/A"}
+                      </TableCell>
+                      <TableCell>{transaction.transactionType}</TableCell>
+                      <TableCell>
+                        <div className="flex justify-center gap-2">
+                          <Button asChild size="icon" variant="ghost">
+                            <Link
+                              href={`/customer-order-detail?id=${transaction.customerOrderId}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">View Order</span>
+                            </Link>
+                          </Button>
+                          <Button asChild size="icon" variant="ghost">
+                            <Link
+                              href={`/order-transaction/update?id=${transaction.transactionId}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
+                            </Link>
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="text-red-500 hover:text-red-700"
+                            onClick={() =>
+                              handleDelete(transaction.transactionId)
+                            }
+                          >
+                            <Trash className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
