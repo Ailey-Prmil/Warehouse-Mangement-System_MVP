@@ -15,6 +15,24 @@ import {
 } from "drizzle-orm/mysql-core";
 import { sql } from "drizzle-orm";
 
+export const user = mysqlTable(
+  "User",
+  {
+    userId: int("UserID").autoincrement().notNull(),
+    username: varchar("Username", { length: 50 }).notNull(),
+    password: varchar("Password", { length: 255 }).notNull(),
+    role: mysqlEnum("Role", ["Admin", "User", "Manager"]).default("User").notNull(),
+    email: varchar("Email", { length: 100 }),
+    createdAt: timestamp("CreatedAt", { mode: "string" }).defaultNow(),
+    lastLogin: timestamp("LastLogin", { mode: "string" }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId], name: "User_UserID" }),
+    unique("Username").on(table.username),
+    unique("Email").on(table.email),
+  ]
+);
+
 export const customerOrder = mysqlTable(
   "CustomerOrder",
   {
