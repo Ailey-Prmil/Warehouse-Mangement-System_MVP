@@ -58,6 +58,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, []);
 
+  // Refresh access token using refresh token
+  const refreshToken = async (): Promise<boolean> => {
+    // Check if running in browser
+    if (typeof window === "undefined") {
+      return false;
+    }
+
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (!refreshToken) {
+      return false;
+    }
+
+    try {
+      // Call the refresh API endpoint
+      const response = await fetch("/api/auth/refresh", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update access token in localStorage
+        localStorage.setItem("accessToken", data.accessToken);
+        return true;
+      } else {
+        // Token refresh failed, clear storage
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("username");
+        setIsAuthenticated(false);
+        setUsername(null);
+        return false;
+      }
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      return false;
+    }
+  };
+
   // Verify if user is authenticated
   const checkAuth = async (): Promise<boolean> => {
     // Check if running in browser
@@ -89,13 +132,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUsername(data.user.username || localStorage.getItem("username"));
         return true;
       } else {
-        // Token is invalid, clear storage
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        localStorage.removeItem("username");
-        setIsAuthenticated(false);
-        setUsername(null);
-        return false;
+        // Token is invalid, try to refresh it
+        const refreshed = await refreshToken();
+
+        if (refreshed) {
+          // Token was refreshed successfully, try verification again
+          return await checkAuth();
+        } else {
+          // Refresh failed, clear storage
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("username");
+          setIsAuthenticated(false);
+          setUsername(null);
+          return false;
+        }
       }
     } catch (error) {
       console.error("Auth check error:", error);
