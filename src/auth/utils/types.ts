@@ -1,6 +1,8 @@
 export interface User {
   username: string;
   password: string; // This will be the hashed password
+  email?: string;
+  role?: 'Admin' | 'User' | 'Manager'; 
   createdAt: string;
 }
 

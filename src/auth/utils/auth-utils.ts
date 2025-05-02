@@ -59,10 +59,10 @@ export const saveUser = async (userData: UserType): Promise<void> => {
       username: userData.username,
       password: hashedPassword,
       email: userData.email || null,
-      role: 'User'
+      role: userData.role || 'User' // Use provided role or default to 'User'
     });
     
-    console.log(`User ${userData.username} saved to database`);
+    console.log(`User ${userData.username} saved to database with role: ${userData.role || 'User'}`);
   } catch (error) {
     console.error('Error saving user to database:', error);
     throw error;
@@ -87,6 +87,7 @@ export const getUserByUsername = async (username: string): Promise<UserType | nu
       username: userData.username,
       password: userData.password,
       email: userData.email || undefined,
+      role: userData.role as UserType['role'],
       createdAt: userData.createdAt || new Date().toISOString()
     };
   } catch (error) {
