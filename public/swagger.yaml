@@ -1,0 +1,1792 @@
+openapi: 3.0.4
+info:
+  title: API for WMS - Documented by Swagger
+  description: |-
+    This is an API documentation of all endpoints available for the use of WMS
+
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+
+tags:
+  - name: Authentication
+    description: User authentication endpoints for login, token refresh, and user management
+  
+  - name: Inbound functions
+    description: All relevant operations in the inbound phase of WMS operations, managing purchasing order, purchasing order details, inbound shipment, inbound shipment details.
+
+  - name: Outbound functions
+    description: All relevant operations in the outbound phase of WMS operations, managing customer order, customer order details, outbound shipment, order transaction.
+
+  - name: Stock functions
+    description: All relevant operations to keep stock or inspect stock within, managing inspection, location, order transaction, picking list, product, stock, stock transaction.
+paths:
+  /api/customer-order:
+    get:
+      tags:
+        - Outbound functions
+      summary: Get all available customer orders
+      description: Get all information (CustomerOrderId, OrderDate, Status,...) abount all available customer orders
+      operationId: getAllCustomerOrders
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerOrder"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Outbound functions
+      summary: Add a new customer order to WMS.
+      description: Insert a new customer order record into the system.
+      operationId: addCustomerOrder
+      requestBody:
+        description: Create a new customer order
+        content:
+          application/json:
+            $ref: "#/components/schemas/InsertCustomerOrder"
+        required: true
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerOrder"
+
+        "500":
+          description: Error inserting data
+          schema:
+            $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Outbound functions
+      summary: Update the status of the customer order.
+      description: All other field of customer order should be static (out of scope of a WMS). Only status is allowed to be editted.
+      operationId: updateCustomerOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCustomerOrder"
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerOrder"
+
+        "500":
+          description: Error updating data
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  /api/customer-order/{orderId}:
+    get:
+      tags:
+        - Outbound functions
+      summary: Get the details of customer order by its orderId.
+      description: Get the details of products within the customer order idetified by the orderId.
+      operationId: getCustomerOrderDetails
+      parameters:
+        - name: orderId
+          in: path
+          description: The key ID used to find target customer order.
+          required: true
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        "200":
+          description: successful fetching data of customer ordere
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orderId:
+                    description: "The primary key of CustomerOrder"
+                    oneOf:
+                      - type: string
+                      - type: integer
+                    example: 1001
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          description: "The Id of the product included in a customer order."
+                          type: integer
+                          example: 101
+                        quantity:
+                          description: "The quantity of each product in the order."
+                          type: integer
+                          example: 30
+
+        "404":
+          description: Invalid orderId value
+          example: No order found with ID 10003
+        "500":
+          description: Error fetching data
+
+  /api/inbound-shipment:
+    get:
+      tags:
+        - Inbound functions
+      summary: Get all available customer orders
+      description: Get all information about all available inbound shipments
+      operationId: getAllInboundShipment
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InboundShipment"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Inbound functions
+      summary: Add an inbound shipment to WMS.
+      description: Create a new customer order. There is only 2 fields in the inbound shipment. Both can be auto-generated by the database. Hence, no need for body request.
+      operationId: addInboundShipment
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboundShipment"
+
+        "500":
+          description: Error inserting data
+          schema:
+            $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Inbound functions
+      summary: Delete an inbound shipment by shipId
+      operationId: deleteInboundShipment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 101
+              required:
+                - shipId
+      responses:
+        "200":
+          description: Inbound shipment deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboundShipment"
+        "400":
+          description: Invalid or missing shipId
+        "404":
+          description: No shipment found with given ID
+        "500":
+          description: Internal server error during deletion
+
+  /api/inbound-shipment/{shipId}:
+    get:
+      tags:
+        - Inbound functions
+      summary: Get the details of the inbound shipment by its shipId.
+      description: Get the details of products within the inbound shipment idetified by the shipId.
+      operationId: getInboundShipmentDetails
+      parameters:
+        - name: shipId
+          in: path
+          description: The key ID used to find target shipment.
+          required: true
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        "200":
+          description: successful fetching data of inbound shipment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InboundShipmentDetails"
+
+        "404":
+          description: Invalid orderId value
+          example: No order found with ID 10003
+        "500":
+          description: Error fetching data
+    post:
+      tags:
+        - Inbound functions
+      summary: Manually insert a new Inbound Shipment Detail record
+      description: Typically handled by a trigger, but this endpoint allows manual insertion for testing or manual correction.
+      operationId: createInboundShipmentDetail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 101
+                productId:
+                  type: integer
+                  example: 2005
+                receivedQuantity:
+                  type: integer
+                  minimum: 0
+                  example: 0
+              required:
+                - shipId
+                - productId
+                - receivedQuantity
+      responses:
+        "201":
+          description: Inbound shipment detail successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Result of the database insert operation
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ship ID, Product ID and Received Quantity are required
+        "500":
+          description: Server error while inserting data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error inserting data
+    put:
+      tags:
+        - Inbound functions
+      summary: Update received quantity for a specific inbound shipment detail
+      description: Updates the `receivedQuantity` for a specific combination of `shipId` and `productId`.
+      operationId: updateInboundShipmentDetail
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 101
+                productId:
+                  type: integer
+                  example: 2005
+                receivedQuantity:
+                  type: integer
+                  minimum: 0
+                  example: 25
+              required:
+                - shipId
+                - productId
+                - receivedQuantity
+      responses:
+        "200":
+          description: Received quantity successfully updated
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Result of the update operation (e.g., affected row count or raw result)
+        "400":
+          description: Missing or invalid required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Ship ID, Product ID and Received Quantity are required
+        "500":
+          description: Server error while updating data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating data
+
+  /api/inspection:
+    get:
+      tags:
+        - Stock functions
+      summary: Get information of all the inspections.
+      description: All records and fields in the inspection table.
+      operationId: getAllInspection
+      responses:
+        "200":
+          description: Successful fetching the information about inspections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Inspection"
+    post:
+      tags:
+        - Stock functions
+      summary: Create a new inspection record
+      description: Adds a new inspection entry to the database for a specific stock item.
+      operationId: createInspection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                stockId:
+                  type: integer
+                  example: 100
+                  description: ID of the stock item being inspected
+                defectQuantity:
+                  type: integer
+                  minimum: 0
+                  example: 2
+                  description: Quantity of defective items found during inspection
+                reason:
+                  type: string
+                  example: "Scratched surface"
+                  description: Optional reason or description of the defect
+              required:
+                - stockId
+                - defectQuantity
+      responses:
+        "201":
+          description: Inspection created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Inspection"
+        "400":
+          description: Missing required fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Stock ID, Defect Quantity are required"
+        "500":
+          description: Server error while creating the inspection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Error creating inspection"
+
+  /api/location:
+    get:
+      tags:
+        - Stock functions
+      summary: Get information of all the location bins within the WMS.
+      description: All records and fields in the location bins table. This table uses mock data, so we don't need to implement POST, PUT, DELETE methods.
+      operationId: getAllLocations
+      responses:
+        "200":
+          description: Successfully fetching the information about location bins.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LocationBin"
+
+  /api/order-transaction:
+    get:
+      tags:
+        - Stock functions
+      summary: Get the information of all order transactions
+      description: This is all the transactions (operations) performed on the the order.
+      operationId: getOrderTransactions
+      responses:
+        "200":
+        description: Successfully fetching the information of all order transactions
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/OrderTransaction"
+    post:
+      tags:
+        - Stock functions
+      summary: Create a new order transaction
+      description: Creates a new transaction record for a customer order. Note that transactions of type `Receive` or ones missing `refId` are handled by triggers and should not be inserted via this endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customerOrderId
+                - transactionType
+              properties:
+                customerOrderId:
+                  type: integer
+                  example: 123
+                  description: The ID of the associated customer order
+                refId:
+                  type: integer
+                  nullable: true
+                  example: 456
+                  description: A reference ID for the transaction (thiss ref ID can be shipID ~ outbound or pickListID)
+                transactionType:
+                  type: string
+                  enum:
+                    - Pick and Pack
+                    - Ship
+                  example: "Pick and Pack"
+                  description: The type of transaction. Only allowing inserting Pick and Pack or Ship transactions. "Receive" transaction is automated.
+                transactionTime:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2025-04-24T12:34:56Z"
+                  description: Optional custom timestamp for the transaction
+      responses:
+        "201":
+          description: Order transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Order transaction created successfully.
+                  data:
+                    type: object
+                    description: Insert result or record metadata
+        "400":
+          description: Bad request due to missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: customerOrderId and transactionType are required.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error while creating order transaction.
+
+  /api/outbound-shipment:
+    get:
+      tags:
+        - Outbound functions
+      summary: Get all overall information of all outbound shipments
+      description: |
+        Retrieves all outbound shipments with their relevant overall features.
+      responses:
+        "200":
+          description: A list of outbound shipments with related customer orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutboundShipment"
+    post:
+      tags:
+        - Outbound functions
+      summary: Create a new outbound shipment
+      description: Creates a new outbound shipment. All fields are optional and will use defaults if not provided.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipmentDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2025-04-24T10:00:00Z"
+                  description: Optional shipment date. Defaults to current time.
+                carrier:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "UPS"
+                  description: Optional carrier name
+                trackingNumber:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "1Z1234567890"
+                  description: Optional tracking number. Must be unique if provided.
+      responses:
+        "200":
+          description: Shipment successfully created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Outbound shipment created successfully.
+                  data:
+                    type: object
+                    example:
+                      insertId: 12
+        "500":
+          description: Internal server error while inserting data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error inserting data
+    put:
+      tags:
+        - Outbound functions
+      summary: Update an outbound shipment
+      description: |
+        Updates one or more fields of an existing outbound shipment. 
+        Only the provided fields in the request body will be updated. 
+        Fields not included will remain unchanged.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - shipmentId
+              properties:
+                shipmentId:
+                  type: integer
+                  example: 1
+                  description: The ID of the shipment to update
+                shipmentDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                  example: "2025-04-24T15:30:00Z"
+                  description: Optional updated shipment date
+                carrier:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "DHL"
+                  description: Optional updated carrier name
+                trackingNumber:
+                  type: string
+                  maxLength: 100
+                  nullable: true
+                  example: "TRACK987654321"
+                  description: Optional updated tracking number
+      responses:
+        "200":
+          description: Shipment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Outbound shipment updated successfully.
+                  updated:
+                    type: object
+                    example:
+                      affectedRows: 1
+        "400":
+          description: Bad request (e.g., missing shipmentId or no fields to update)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No fields provided to update.
+        "500":
+          description: Internal server error while updating shipment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error updating data
+    delete:
+      tags:
+        - Outbound functions
+      summary: Delete an outbound shipment
+      description: |
+        Deletes the outbound shipment with the specified shipmentId. 
+        If the shipment does not exist or the shipmentId is missing, an error will be returned.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - shipmentId
+              properties:
+                shipmentId:
+                  type: integer
+                  example: 1
+                  description: The ID of the shipment to delete
+      responses:
+        "200":
+          description: Shipment successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Shipment deleted successfully.
+                  deleted:
+                    type: object
+                    example:
+                      affectedRows: 1
+        "400":
+          description: Missing shipmentId
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Shipment ID is required.
+        "500":
+          description: Internal server error while deleting shipment
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Error deleting data
+
+  /api/picking-list:
+    get:
+      tags:
+        - Stock functions
+      summary: Get all available picking list
+      description: Get all information about all available picking list (time created and time done)
+      operationId: getAllPickingList
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PickingList"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Stock functions
+      summary: Add a picking list to WMS.
+      description: Create a new picking list. There is only 3 fields in the picking list. They all can be auto-generated by the database or nullable (modified later). Hence, no need for body request.
+      operationId: addPickingList
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PickingList"
+
+        "500":
+          description: Failed to create picking list
+          schema:
+            $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Stock functions
+      summary: Update the doneAt field within the picking list.
+      description: There are only 2 fields in the picking list, createdAt is auto-generated while doneAt is meant to be updated. (fields can be added later)
+      operationId: updatePickingList
+      requestBody:
+        content:
+          required: true
+          application/json:
+            schema:
+              type: object
+              properties:
+                picklistId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  example: 1011
+                doneAt:
+                  type: string
+                  format: date-time
+                  example: "2025-04-28T14:00:00Z"
+              required:
+                - picklistId
+                - doneAt
+
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PickingList"
+
+        "500":
+          description: Failed to update picking list
+          schema:
+            $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Stock functions
+      summary: Delete a picking list by picklistId
+      operationId: deletePickingList
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  type: integer
+                  example: 1011
+              required:
+                - shipId
+      responses:
+        "200":
+          description: Picking List deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PickingList"
+        "400":
+          description: Invalid or missing pickListId
+        # "404":
+        #   description: No shipment found with given ID
+        "500":
+          description: Internal server error during deletion
+
+  /api/product:
+    get:
+      tags:
+        - Stock functions
+      summary: Get all available products
+      description: Get all general information about all available products.
+      operationId: getAllProducts
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/purchase-order:
+    get:
+      tags:
+        - Inbound functions
+      summary: Get all available purchase orders
+      description: Get all information about all available purchase orders
+      operationId: getAllPurchaseOrders
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PurchaseOrder"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Inbound functions
+      summary: Add a new purchase order to WMS.
+      description: Insert a new purchase order record into the system.
+      operationId: addPurchaseOrder
+      requestBody:
+        description: Create a new purchase order
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shipId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                  nullable: true
+
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+
+        "500":
+          description: Error inserting data
+          schema:
+            $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - Inbound functions
+      summary: Update the shipId of the purchase order.
+      description: All other field of purchase order should be static (out of scope of a WMS). This function should of limited use as it should be out of WMS scope.
+      operationId: updatePurchaseOrder
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: true
+              properties:
+                poId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                shipId:
+                  oneOf:
+                    - type: integer
+                    - type: string
+                required:
+                  - poId
+                  - shipId
+
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseOrder"
+
+        "500":
+          description: Error updating data
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  /api/purchase-order/{poId}:
+    get:
+      summary: Get the details of each purchase order
+      description: This endpoint provides data about the details of purchase order including related inbound shipment and all product details within the purchase order. Pay attention to align this details data with those in the inbound shipment.
+      tags:
+        - Inbound functions
+      operationId: getPurchaseOrderDetails
+      parameters:
+        - name: poId
+          in: path
+          description: The key ID used to find target purchase order.
+          required: true
+          schema:
+            oneOf:
+              - type: string
+              - type: integer
+      responses:
+        "200":
+          description: successfully fetching data of customer order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  poId:
+                    description: "The primary key of CustomerOrder"
+                    oneOf:
+                      - type: string
+                      - type: integer
+                    example: 401
+                  shipId:
+                    description: The Id of the shipment of relevant purchase order.
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          description: "The Id of the product included in a customer order."
+                          type: integer
+                          example: 101
+                        quantity:
+                          description: "The quantity of each product in the order."
+                          type: integer
+                          example: 30
+
+        "404":
+          description: Invalid orderId value
+          example: No order found with ID 10003
+        "500":
+          description: Error fetching data
+
+  /api/stock:
+    get:
+      tags:
+        - Stock functions
+      summary: Get all available stock information
+      description: Get all general information about all available stock.
+      operationId: getAllStocks
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Stock"
+
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/stock-transaction:
+    get:
+      tags:
+        - Stock functions
+      summary: Get all stock transactions within the WMS
+      description: Get all the relevant stock transactions of different type (Store, Pick and Remove)
+      operationId: getStockTransactions
+      responses:
+        "200":
+          description: Successfully fetching the information of all stock transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/StockTransaction"
+    post:
+      tags:
+        - Stock functions
+      summary: Create a new order transaction
+      description: Creates a new transaction record for a customer order. Note that transactions of type `remove` are handled by triggers and should not be inserted via this endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productId
+                - locId
+                - quantity
+              properties:
+                productId:
+                  type: integer
+                  example: 1
+                  description: The ID of the associated products.
+                locId:
+                  type: integer
+                  example: 4
+                  description: The ID of the associated products.
+
+                refId:
+                  type: integer
+                  nullable: true
+                  example: 456
+                  description: A reference ID for the transaction (this ref ID can be pickListID)
+                transactionType:
+                  type: string
+                  enum:
+                    - Store
+                    - Pick
+                  example: "Pick"
+                  description: The type of transaction. Only allowing inserting Pick transactions. `Remove` transaction is automated.
+                quantity:
+                  type: integer
+                  example: 50
+                  description: Quantity of the stock in that transaction
+      responses:
+        "201":
+          description: Stock transaction created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Stock transaction created successfully.
+                  data:
+                    schema:
+                      $ref: "#/components/schemas/StockTransaction"
+                    description: Insert result or record metadata
+        "400":
+          description: Bad request due to missing or invalid fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: productId, locId and transactionType are required.
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal server error while creating order transaction.
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate a user and get access tokens
+      description: Verifies user credentials and returns access and refresh tokens if successful
+      operationId: loginUser
+      requestBody:
+        description: User credentials
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "admin-user"
+                  description: User's username
+                password:
+                  type: string
+                  example: "password123"
+                  description: User's password
+              required:
+                - username
+                - password
+      responses:
+        "200":
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401":
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid username or password"
+
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Get a new access token using a refresh token
+      description: Uses a valid refresh token to generate a new access token
+      operationId: refreshToken
+      requestBody:
+        description: Refresh token
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  description: Valid refresh token
+              required:
+                - refreshToken
+      responses:
+        "200":
+          description: New access token generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshTokenResponse"
+        "401":
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid or expired refresh token"
+
+  /api/auth/verify:
+    post:
+      tags:
+        - Authentication
+      summary: Verify an access token
+      description: Checks if the provided access token is valid
+      operationId: verifyToken
+      requestBody:
+        description: Access token to verify
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: JWT access token
+              required:
+                - token
+      responses:
+        "200":
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    example: true
+                  username:
+                    type: string
+                    example: "admin-user"
+                  role:
+                    type: string
+                    example: "Admin"
+        "401":
+          description: Token is invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid token"
+
+  /api/auth/user:
+    post:
+      tags:
+        - Authentication
+      summary: Create a new user account
+      description: Creates a new user in the database
+      operationId: createUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: User information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User created successfully"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Username already exists"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Unauthorized"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from the /api/auth/login endpoint
+      
+  schemas:
+    CustomerOrder:
+      type: object
+      properties:
+        customerOrderID:
+          description: "The primary key of CustomerOrder"
+          oneOf:
+            - type: string
+            - type: integer
+          example: 1001
+        orderDate:
+          description: "The date the order was placed"
+          type: string
+          format: date-time
+          example: "2025-04-17 11:05:38"
+        status:
+          description: "The current status of the order"
+          type: string
+          enum:
+            - Pending
+            - Pick and Pack
+            - Shipped
+          example: "Pick and"
+        address:
+          description: "The address where the order should be placed"
+          type: string
+          example: "456 Oak Ave, Somewhere, SM 67890"
+    UpdateCustomerOrder:
+      type: object
+      required:
+        - orderId
+        - newStatus
+      properties:
+        orderId:
+          description: "The key to search for the target customer order for updating."
+          oneOf:
+            - type: string
+            - type: integer
+
+          example: 1001
+
+        newStatus:
+          description: "The new status of the updating customer order."
+          type: string
+          enum:
+            - Pending
+            - Pick and Pack
+            - Shipped
+          example: "Pick and Pack"
+    InsertCustomerOrder:
+      type: object
+      required:
+        - address
+      properties:
+        orderDate:
+          description: "The date the order was placed, if not given, take current timestamp as default"
+          type: string
+          format: date-time
+          example: "2025-04-17 11:05:38"
+
+        address:
+          description: "The address where the order should be placed"
+          type: string
+          example: "456 Oak Ave, Somewhere, SM 67890"
+    InboundShipment:
+      type: object
+      properties:
+        shipID:
+          oneOf:
+            - type: string
+            - type: integer
+          description: The key of inbound shipment.
+        shipmentTime:
+          type: string
+          format: date-time
+          description: The date the shipment is inputted. If not given, take current timestamp as default.
+    InboundShipmentDetails:
+      type: object
+      properties:
+        shipId:
+          oneOf:
+            - type: string
+            - type: integer
+          description: The key of inbound shipment
+        inboundShipmentDetails:
+          type: object
+          properties:
+            productId:
+              oneOf:
+                - type: string
+                - type: integer
+              description: Foreign key referencing Product.productId.
+            receivedQuantity:
+              type: integer
+              minimum: 0
+              description: Quantity received. Must be >= 0.
+              example: 50
+            orderedQuantity:
+              type: integer
+              minimum: 0
+              description: Quantity ordered in PO. Must be >= 0.
+              example: 55
+        purchaseOrderIds:
+          type: array
+          items:
+            type: integer
+          example: [1001, 1002, 1003]
+    Inspection:
+      type: object
+      properties:
+        inspectID:
+          type: integer
+          format: int32
+          description: Unique ID of the inspection (auto-incremented)
+          example: 1
+        stockID:
+          type: integer
+          format: int32
+          description: ID of the related stock item
+          example: 101
+        inspectDate:
+          type: string
+          format: date-time
+          description: Date and time of the inspection
+          example: "2025-04-24T08:30:00Z"
+        defectQuantity:
+          type: integer
+          format: int32
+          description: Number of defective items found (must be >= 0)
+          minimum: 0
+          example: 3
+        reason:
+          type: string
+          description: Description or reason for the defect, if any
+          example: "Packaging damage"
+    LocationBin:
+      type: object
+      properties:
+        locId:
+          type: integer
+          format: int32
+          description: Unique identifier for the location bin
+          example: 1
+        aisle:
+          type: string
+          description: Aisle label or number
+          example: "A5"
+        section:
+          type: string
+          description: Section within the aisle
+          example: "S3"
+        shelf:
+          type: string
+          description: Shelf within the section
+          example: "Top"
+        capacity:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Maximum number of items the bin can hold
+          example: 100
+      required:
+        - locId
+        - capacity
+    OrderTransaction:
+      type: object
+      required:
+        - transactionId
+        - customerOrderId
+        - transactionType
+      properties:
+        transactionId:
+          type: integer
+          format: int32
+          description: Auto-incremented primary key
+          example: 1
+        customerOrderId:
+          type: integer
+          format: int32
+          description: Foreign key referencing CustomerOrder.customerOrderId
+          example: 101
+        refId:
+          type: integer
+          format: int32
+          nullable: true
+          description: Optional reference ID
+          example: 5001
+        transactionTime:
+          type: string
+          format: date-time
+          description: Timestamp of the transaction
+          example: "2025-04-24T15:30:00Z"
+        transactionType:
+          type: string
+          enum:
+            - Receive
+            - Pick and Pack
+            - Ship
+          description: Type of transaction
+          example: "Receive"
+    OutboundShipment:
+      type: object
+      required:
+        - shipmentId
+      properties:
+        shipmentId:
+          type: integer
+          format: int32
+          description: Auto-incremented primary key for the shipment
+          example: 1
+        shipmentDate:
+          type: string
+          format: date-time
+          description: Date and time the shipment was created
+          example: "2025-04-24T15:30:00Z"
+        carrier:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Name of the carrier handling the shipment
+          example: "DHL Express"
+        trackingNumber:
+          type: string
+          maxLength: 100
+          nullable: true
+          description: Unique tracking number for the shipment
+          example: "1Z9999999999999999"
+    PickingList:
+      type: object
+      properties:
+        picklistId:
+          type: integer
+          example: 1
+          description: Unique identifier for the picking list. Auto increment value.
+        generatedAt:
+          type: string
+          format: date-time
+          example: "2025-04-24T12:00:00Z"
+          description: Timestamp when the picking list was generated. Default to now().
+        doneAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-04-25T14:00:00Z"
+          description: Timestamp when the picking list was completed (nullable)
+      required:
+        - picklistId
+    Product:
+      type: object
+      properties:
+        productId:
+          type: integer
+          example: 101
+          description: Unique identifier for the product
+        name:
+          type: string
+          maxLength: 255
+          example: "Wireless Mouse"
+          description: Name of the product
+        sku:
+          type: string
+          maxLength: 100
+          example: "WM-12345"
+          description: Stock Keeping Unit (SKU) of the product
+        unitOfMeasure:
+          type: string
+          maxLength: 50
+          nullable: true
+          example: "pcs"
+          description: Unit of measurement for the product (nullable)
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-04-24T12:00:00Z"
+          description: Timestamp when the product was created
+        updatedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: "2025-04-25T15:00:00Z"
+          description: Timestamp when the product was last updated (nullable)
+      required:
+        - productId
+        - name
+        - sku
+    PurchaseOrder:
+      type: object
+      properties:
+        poId:
+          type: integer
+          example: 1
+          description: Auto-incremented primary key for the purchase order.
+        shipId:
+          type: integer
+          example: 1001
+          description: Foreign key referencing the shipment (inboundShipment.shipId).
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-04-25T14:35:00Z"
+          description: Timestamp when the purchase order was created.
+      required:
+        - shipId
+    Stock:
+      type: object
+      properties:
+        stockId:
+          description: The primary key of stock ID.
+          oneOf:
+            - type: integer
+            - type: string
+        productId:
+          description: The productID of the stock
+          oneOf:
+            - type: integer
+            - type: string
+        locId:
+          description: The locId of the stock
+          oneOf:
+            - type: integer
+            - type: string
+        quantity:
+          description: The quantity that is currently available in the warehouse.
+          type: integer
+
+        lastUpdated:
+          description: The datetime this particular stock is last updated
+          type: string
+          format: date-time
+    StockTransaction:
+      type: object
+      required:
+        - transactionId
+        - productId
+        - locId
+        - transactionType
+      properties:
+        transactionId:
+          type: integer
+          format: int32
+          description: Auto-incremented primary key
+          example: 1
+        productId:
+          type: integer
+          format: int32
+          description: Foreign key referencing Product.productId
+          example: 101
+        locId:
+          type: integer
+          format: int32
+          description: Foreign key referencing location.LocId
+          example: 2
+        quantity:
+          type: integer
+          format: int64
+          description: The quantity of product that is related to certain stock transactions.
+        refId:
+          type: integer
+          format: int32
+          nullable: true
+          description: RefId can be referenced to inspectionId (for remove transaction type) or picklistId (for pick transaction)
+          example: 5001
+        transactionTime:
+          type: string
+          format: date-time
+          description: Timestamp of the transaction
+          example: "2025-04-24T15:30:00Z"
+        transactionType:
+          type: string
+          enum:
+            - Store
+            - Pick
+            - Remove
+          description: Type of transaction
+          example: "Pick"
+    Error:
+      type: object
+      properties:
+        status:
+          type: string
+          example: 500
+        message:
+          type: string
+          example: "Unexpected Error"
+      required:
+        - status
+        - message
+    AuthResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Authentication successful"
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refreshToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        user:
+          type: object
+          properties:
+            username:
+              type: string
+              example: "admin-user"
+            role:
+              type: string
+              example: "Admin"
+      required:
+        - success
+        - accessToken
+        - refreshToken
+        - user
+
+    RefreshTokenResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Token refreshed successfully"
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      required:
+        - success
+        - accessToken
+
+    CreateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "new-user"
+          description: Unique username for the new user
+        password:
+          type: string
+          example: "securePassword123"
+          description: Password for the new user
+        email:
+          type: string
+          example: "user@example.com"
+          description: User's email address
+        role:
+          type: string
+          enum: ["Admin", "User", "Manager"]
+          example: "User"
+          description: Role of the new user
+      required:
+        - username
+        - password
+        - role
