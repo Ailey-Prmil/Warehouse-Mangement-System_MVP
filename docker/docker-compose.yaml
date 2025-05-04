@@ -8,8 +8,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: wmsadmin
       MYSQL_DATABASE: wms
-      MYSQL_USER: wmsuser
-      MYSQL_PASSWORD: wmspassword
+
     ports:
       - "3307:3306"
     volumes:

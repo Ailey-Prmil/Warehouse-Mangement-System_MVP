@@ -127,57 +127,69 @@ CREATE TABLE IF NOT EXISTS PurchaseOrderDetail (
     FOREIGN KEY (PO_ID) REFERENCES PurchaseOrder(PO_ID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
 );
--- should also check the avaiilabolity of the stock
-DELIMITER || CREATE TRIGGER AutomateStockQuantity BEFORE
-INSERT ON StockTransaction FOR EACH ROW BEGIN -- DECLARE AND ASSIGN VARIABLES
-DECLARE AvailableSpace,
-    CurrentStock INT;
-DECLARE StockQuantity INT;
-IF NEW.TransactionType = "Store" THEN -- GET FREE SPACE FROM LOCBIN
-SELECT (
-        LocationBin.Capacity - COALESCE(StockAggregation.Sum, 0)
-    ) INTO AvailableSpace
-FROM LocationBin
-    LEFT JOIN (
-        SELECT LocID,
-            SUM(Quantity) AS Sum
+
+
+-- should also check the availability of the stock
+DELIMITER ||
+CREATE TRIGGER AutomateStockQuantity BEFORE
+INSERT ON StockTransaction FOR EACH ROW
+BEGIN
+    -- DECLARE AND ASSIGN VARIABLES
+    DECLARE AvailableSpace,
+        CurrentStock INT;
+    DECLARE StockQuantity INT;
+    IF NEW.TransactionType = "Store" THEN -- GET FREE SPACE FROM LOCBIN
+        SELECT (
+                LocationBin.Capacity - COALESCE(StockAggregation.Sum, 0)
+            ) INTO AvailableSpace
+        FROM LocationBin
+            LEFT JOIN (
+                SELECT LocID,
+                    SUM(Quantity) AS Sum
+                FROM Stock
+                GROUP BY LocID
+            ) StockAggregation ON LocationBin.LocID = StockAggregation.LocID
+        WHERE LocationBin.LocID = NEW.LocID;
+        -- UPDATE THE STOCK OR SIGNAL ERROR
+        IF AvailableSpace >= NEW.Quantity THEN
+            INSERT INTO Stock (LocID, ProductID, Quantity)
+            VALUES (NEW.LocID, NEW.ProductID, NEW.Quantity) ON DUPLICATE KEY
+            UPDATE Quantity = Quantity + NEW.Quantity;
+        -- INSERT INTO StockTransaction
+        ELSE
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'There is no available space in this location';
+        END IF;
+    ELSE
+        SELECT Quantity INTO CurrentStock
         FROM Stock
-        GROUP BY LocID
-    ) StockAggregation ON LocationBin.LocID = StockAggregation.LocID
-WHERE LocationBin.LocID = NEW.LocID;
--- UPDATE THE STOCK OR SIGNAL ERROR
-IF AvailableSpace >= NEW.Quantity THEN
-INSERT INTO Stock (LocID, ProductID, Quantity)
-VALUES (NEW.LocID, NEW.ProductID, NEW.Quantity) ON DUPLICATE KEY
-UPDATE Quantity = Quantity + NEW.Quantity;
--- INSERT INTO StockTransaction
-ELSE SIGNAL SQLSTATE '45000'
-SET MESSAGE_TEXT = 'There is no available space in this location';
-END IF;
-ELSE
-SELECT Quantity INTO CurrentStock
-FROM Stock
-WHERE Stock.LocID = NEW.LocID
-    AND Stock.ProductID = NEW.ProductID;
-IF CurrentStock >= NEW.Quantity THEN
-UPDATE Stock
-SET Quantity = Quantity - new.Quantity
-WHERE LocID = NEW.LocID
-    AND ProductID = NEW.ProductID;
-SELECT Quantity INTO StockQuantity
-FROM Stock
-WHERE LocID = NEW.LocID
-    AND ProductID = NEW.ProductID;
-IF (StockQuantity = 0) THEN
-DELETE FROM Stock
-WHERE LocID = NEW.LocID
-    AND ProductID = NEW.ProductID;
-END IF;
-ELSE SIGNAL SQLSTATE '45000'
-SET MESSAGE_TEXT = 'The stock is not enough for this transaction';
-END IF;
-END IF;
-END || -- Create trigger when inserting to inspection - auto insert to stock transaction
+        WHERE Stock.LocID = NEW.LocID
+            AND Stock.ProductID = NEW.ProductID;
+    IF CurrentStock >= NEW.Quantity THEN
+        UPDATE Stock
+        SET Quantity = Quantity - new.Quantity
+        WHERE LocID = NEW.LocID
+            AND ProductID = NEW.ProductID;
+
+        SELECT Quantity INTO StockQuantity
+        FROM Stock
+        WHERE LocID = NEW.LocID
+            AND ProductID = NEW.ProductID;
+        IF (StockQuantity = 0) THEN
+            DELETE FROM Stock
+            WHERE LocID = NEW.LocID
+                AND ProductID = NEW.ProductID;
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'The stock is not enough for this transaction';
+    END IF;
+    END IF;
+END||
+
+
+-- Create trigger when inserting to inspection - auto insert to stock transaction
+DELIMITER ||
 CREATE TRIGGER AutomateInspectionStockTransaction
 AFTER
 INSERT ON Inspection FOR EACH ROW BEGIN
@@ -202,14 +214,25 @@ VALUES (
         NEW.InspectID,
         NEW.DefectQuantity
     );
-END || -- Create trigger to insert all details within the PO to the relevant shipment
+END||
+
+-- Create trigger to insert all details within the PO to the relevant shipment
 -- seek for different alternatives ?
 -- Duplicate key could be found (ProductID and ShipID should be the composite primary key)
 -- Complicated to carry in database -- backend instead ?
+
 -- Create trigger when inserting to customer order - auto insert to order transaction - type Receive
+DELIMITER ||
 CREATE TRIGGER AutomateCustomerOrderReceiveTransaction
 AFTER
 INSERT ON CustomerOrder FOR EACH ROW BEGIN
 INSERT INTO OrderTransaction (CustomerOrderID, TransactionType)
 VALUES (NEW.CustomerOrderID, "Receive");
 END ||
+
+DELIMITER ;
+
+DROP USER IF EXISTS 'wmsuser';
+CREATE USER 'wmsuser' IDENTIFIED BY 'wmspassword';
+GRANT ALL PRIVILEGES ON wms.* TO wmsuser WITH GRANT OPTION;
+FLUSH PRIVILEGES;
