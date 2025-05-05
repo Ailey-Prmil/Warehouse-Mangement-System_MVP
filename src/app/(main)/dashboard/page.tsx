@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +11,11 @@ import {
   Truck,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function DashboardPage() {
+  const { isAuthenticated, username } = useAuth();
+
   // Mock data for low stock alerts
   const lowStockItems = [
     {
@@ -29,13 +34,28 @@ export default function DashboardPage() {
     },
   ];
 
+  if (!isAuthenticated) {
+    return (
+      <div className="container mx-auto py-8">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Authentication Required</AlertTitle>
+          <AlertDescription>
+            Please log in to access the dashboard.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Overview of warehouse operations
-        </p>
+        {/* <p className="text-muted-foreground">
+          Welcome, <span className="font-semibold">{username}</span>! Here's an
+          overview of warehouse operations.
+        </p> */}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

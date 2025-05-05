@@ -1,6 +1,14 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from "next/link"
-import { ArrowRight, BarChart3, Box, Layers, Package, ShoppingCart, Truck } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import {
+  ArrowRight,
+  BarChart3,
+  Box,
+  Layers,
+  Package,
+  ShoppingCart,
+  Truck,
+} from "lucide-react";
 
 export default function HomePage() {
   const quickLinks = [
@@ -46,13 +54,15 @@ export default function HomePage() {
       href: "/inbound-shipment",
       color: "bg-yellow-100 text-yellow-700",
     },
-  ]
+  ];
 
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8 space-y-4">
         <h1 className="text-3xl font-bold">Warehouse Management System</h1>
-        <p className="text-gray-500">Manage your warehouse operations efficiently</p>
+        <p className="text-gray-500">
+          Manage your warehouse operations efficiently
+        </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -68,7 +78,10 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <p className="mb-2">{link.description}</p>
-              <Link href={link.href} className="flex items-center gap-1 text-blue-600">
+              <Link
+                href={link.href}
+                className="flex items-center gap-1 text-blue-600"
+              >
                 Go to {link.title} <ArrowRight className="h-4 w-4" />
               </Link>
             </CardContent>
@@ -76,5 +89,5 @@ export default function HomePage() {
         ))}
       </div>
     </div>
-  )
+  );
 }
