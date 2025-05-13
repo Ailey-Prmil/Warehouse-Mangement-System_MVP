@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrder (
     -- Customize for Warehouse usage
     -- Add Shipment ID
     CustomerOrderID INT PRIMARY KEY AUTO_INCREMENT,
-    OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    OrderTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Status ENUM('Pending', 'Pick and Pack', 'Shipped') NOT NULL DEFAULT 'Pending',
     Address VARCHAR(100)
 );
@@ -58,21 +58,21 @@ CREATE TABLE IF NOT EXISTS StockTransaction (
     RefID INT,
     -- Can be PickListID or InspectID? CHECK WITH TRIGGER? -- trigger: Store + , Others -
     Quantity INT NOT NULL CHECK (Quantity > 0),
-    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    TransactionTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE,
     FOREIGN KEY (LocID) REFERENCES LocationBin(LocID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS Inspection (
     InspectID INT PRIMARY KEY AUTO_INCREMENT,
     StockID INT NOT NULL,
-    InspectDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    InspectTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     DefectQuantity INT CHECK (DefectQuantity >= 0),
     Reason TEXT,
     FOREIGN KEY (StockID) REFERENCES Stock(StockID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS OutboundShipment (
     ShipmentID INT PRIMARY KEY AUTO_INCREMENT,
-    ShipmentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ShipmentTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Carrier VARCHAR(100),
     TrackingNumber VARCHAR(100) UNIQUE
 );
@@ -92,15 +92,15 @@ CREATE TABLE IF NOT EXISTS OrderTransaction (
     FOREIGN KEY (CustomerOrderID) REFERENCES CustomerOrder(CustomerOrderID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS InboundShipment (
-    ShipID INT PRIMARY KEY AUTO_INCREMENT,
+    ShipmentID INT PRIMARY KEY AUTO_INCREMENT,
     ShipmentTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS InboundShipmentDetail (
     DetailID INT PRIMARY KEY AUTO_INCREMENT,
-    ShipID INT NOT NULL,
+    ShipmentID INT NOT NULL,
     ProductID INT NOT NULL,
     ReceivedQuantity INT CHECK (ReceivedQuantity >= 0),
-    FOREIGN KEY (ShipID) REFERENCES InboundShipment(ShipID) ON DELETE CASCADE,
+    FOREIGN KEY (ShipmentID) REFERENCES InboundShipment(ShipmentID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
 );
 /* CREATE TABLE IF NOT EXISTS ASN (
@@ -115,9 +115,9 @@ CREATE TABLE IF NOT EXISTS InboundShipmentDetail (
 -- Can be used to alert expected delivery time - but complex relationship
 CREATE TABLE IF NOT EXISTS PurchaseOrder (
     PO_ID INT PRIMARY KEY AUTO_INCREMENT,
-    ShipID INT NOT NULL,
+    ShipmentID INT NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (ShipID) REFERENCES InboundShipment(ShipID) ON DELETE CASCADE
+    FOREIGN KEY (ShipmentID) REFERENCES InboundShipment(ShipmentID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS PurchaseOrderDetail (
     PODetailID INT PRIMARY KEY AUTO_INCREMENT,
