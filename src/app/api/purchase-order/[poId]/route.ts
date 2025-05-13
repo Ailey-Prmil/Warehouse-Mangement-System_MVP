@@ -37,16 +37,16 @@ export async function GET(request: NextRequest, { params }: PoIdParams) {
     }
     const shipIdRecord = await db
       .select({
-        shipId: purchaseOrder.shipId,
+        shipmentId: purchaseOrder.shipmentId,
       })
       .from(purchaseOrder)
       .where(eq(purchaseOrder.poId, poId))
       .limit(1);
-    const shipId = shipIdRecord[0]?.shipId;
+    const shipmentId = shipIdRecord[0]?.shipmentId;
 
     const purchaseOrderDetailsResponse = {
       poId: poId,
-      shipId: shipId || null,
+      shipId: shipmentId || null,
       details: purchaseOrderDetails,
     };
     return NextResponse.json(purchaseOrderDetailsResponse, {

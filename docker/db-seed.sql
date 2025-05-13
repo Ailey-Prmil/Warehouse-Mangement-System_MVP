@@ -83,7 +83,7 @@ VALUES -- Aisle A - Tech products
     (24, 'D2', 'S1', 'SH2', 1000),
     (25, 'D3', 'S1', 'SH1', 1000);
 -- Seed Customer Orders
-INSERT INTO CustomerOrder (CustomerOrderID, OrderDate, Address, Status)
+INSERT INTO CustomerOrder (CustomerOrderID, OrderTime, Address, Status)
 VALUES
 (1001, '2024-12-15 10:30:00', '123 Lê Lợi, District 1, HCM', 'Shipped'),
 (1002, '2025-01-02 14:45:00', '45 Trần Phú, Nha Trang', 'Shipped'),
@@ -191,7 +191,7 @@ VALUES
 (1022, 19, 12);
 
 -- Seed InboundShipment
-INSERT INTO InboundShipment (ShipID, ShipmentTime)
+INSERT INTO InboundShipment (ShipmentID, ShipmentTime)
 VALUES
 (101, '2025-01-23 11:06:22'),
 (102, '2025-01-16 06:13:22'),
@@ -201,7 +201,7 @@ VALUES
 (106, '2024-12-15 09:44:34');
 
 -- Seed InboundShipmentDetail (for received shipments)
-INSERT INTO InboundShipmentDetail (ShipID, ProductID, ReceivedQuantity)
+INSERT INTO InboundShipmentDetail (ShipmentID, ProductID, ReceivedQuantity)
 VALUES 
     -- Shipment 101 - Tech products
     (101, 1, 2000),
@@ -258,7 +258,7 @@ VALUES
     (303, NULL),
     (304, NULL);
 -- Seed PurchaseOrder
-INSERT INTO PurchaseOrder (PO_ID, ShipID)
+INSERT INTO PurchaseOrder (PO_ID, ShipmentID)
 VALUES 
     (401, 101), (402, 101), (403, 101), (404, 101), (405, 101),
     (406, 102), (407, 102), (408, 102), (409, 102), (410, 102),
@@ -404,7 +404,7 @@ VALUES
     (1009, 302, '2025-05-1 15:45:00', 'Pick and Pack')
 ;
 
-INSERT INTO Inspection (StockID, InspectDate, DefectQuantity, Reason)
+INSERT INTO Inspection (StockID, InspectTime, DefectQuantity, Reason)
 VALUES 
   (24, '2025-04-15 10:15:00', 3, 'Damaged packaging'),
   (25, '2025-04-20 14:30:00', 1, 'Broken seal'),

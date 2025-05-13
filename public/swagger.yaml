@@ -12,7 +12,7 @@ info:
 tags:
   - name: Authentication
     description: User authentication endpoints for login, token refresh, and user management
-  
+
   - name: Inbound functions
     description: All relevant operations in the inbound phase of WMS operations, managing purchasing order, purchasing order details, inbound shipment, inbound shipment details.
 
@@ -27,7 +27,7 @@ paths:
       tags:
         - Outbound functions
       summary: Get all available customer orders
-      description: Get all information (CustomerOrderId, OrderDate, Status,...) abount all available customer orders
+      description: Get all information (CustomerOrderId, OrderTime, Status,...) abount all available customer orders
       operationId: getAllCustomerOrders
       responses:
         "200":
@@ -187,7 +187,7 @@ paths:
     delete:
       tags:
         - Inbound functions
-      summary: Delete an inbound shipment by shipId
+      summary: Delete an inbound shipment by shipmentID
       operationId: deleteInboundShipment
       requestBody:
         required: true
@@ -196,11 +196,11 @@ paths:
             schema:
               type: object
               properties:
-                shipId:
+                shipmentID:
                   type: integer
                   example: 101
               required:
-                - shipId
+                - shipmentID
       responses:
         "200":
           description: Inbound shipment deleted successfully
@@ -209,21 +209,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/InboundShipment"
         "400":
-          description: Invalid or missing shipId
+          description: Invalid or missing shipmentID
         "404":
           description: No shipment found with given ID
         "500":
           description: Internal server error during deletion
 
-  /api/inbound-shipment/{shipId}:
+  /api/inbound-shipment/{shipmentID}:
     get:
       tags:
         - Inbound functions
-      summary: Get the details of the inbound shipment by its shipId.
-      description: Get the details of products within the inbound shipment idetified by the shipId.
+      summary: Get the details of the inbound shipment by its shipmentID.
+      description: Get the details of products within the inbound shipment idetified by the shipmentID.
       operationId: getInboundShipmentDetails
       parameters:
-        - name: shipId
+        - name: shipmentID
           in: path
           description: The key ID used to find target shipment.
           required: true
@@ -257,7 +257,7 @@ paths:
             schema:
               type: object
               properties:
-                shipId:
+                shipmentID:
                   type: integer
                   example: 101
                 productId:
@@ -268,7 +268,7 @@ paths:
                   minimum: 0
                   example: 0
               required:
-                - shipId
+                - shipmentID
                 - productId
                 - receivedQuantity
       responses:
@@ -303,7 +303,7 @@ paths:
       tags:
         - Inbound functions
       summary: Update received quantity for a specific inbound shipment detail
-      description: Updates the `receivedQuantity` for a specific combination of `shipId` and `productId`.
+      description: Updates the `receivedQuantity` for a specific combination of `shipmentID` and `productId`.
       operationId: updateInboundShipmentDetail
       requestBody:
         required: true
@@ -312,7 +312,7 @@ paths:
             schema:
               type: object
               properties:
-                shipId:
+                shipmentID:
                   type: integer
                   example: 101
                 productId:
@@ -323,7 +323,7 @@ paths:
                   minimum: 0
                   example: 25
               required:
-                - shipId
+                - shipmentID
                 - productId
                 - receivedQuantity
       responses:
@@ -484,7 +484,7 @@ paths:
                   type: integer
                   nullable: true
                   example: 456
-                  description: A reference ID for the transaction (thiss ref ID can be shipID ~ outbound or pickListID)
+                  description: A reference ID for the transaction (thiss ref ID can be shipmentID ~ outbound or pickListID)
                 transactionType:
                   type: string
                   enum:
@@ -561,12 +561,12 @@ paths:
             schema:
               type: object
               properties:
-                shipmentDate:
+                shipmentTime:
                   type: string
                   format: date-time
                   nullable: true
                   example: "2025-04-24T10:00:00Z"
-                  description: Optional shipment date. Defaults to current time.
+                  description: Optional shipment Time. Defaults to current time.
                 carrier:
                   type: string
                   maxLength: 100
@@ -625,7 +625,7 @@ paths:
                   type: integer
                   example: 1
                   description: The ID of the shipment to update
-                shipmentDate:
+                shipmentTime:
                   type: string
                   format: date-time
                   nullable: true
@@ -825,11 +825,11 @@ paths:
             schema:
               type: object
               properties:
-                shipId:
+                shipmentID:
                   type: integer
                   example: 1011
               required:
-                - shipId
+                - shipmentID
       responses:
         "200":
           description: Picking List deleted successfully
@@ -904,7 +904,7 @@ paths:
             schema:
               type: object
               properties:
-                shipId:
+                shipmentID:
                   oneOf:
                     - type: integer
                     - type: string
@@ -925,7 +925,7 @@ paths:
     put:
       tags:
         - Inbound functions
-      summary: Update the shipId of the purchase order.
+      summary: Update the shipmentID of the purchase order.
       description: All other field of purchase order should be static (out of scope of a WMS). This function should of limited use as it should be out of WMS scope.
       operationId: updatePurchaseOrder
       requestBody:
@@ -939,13 +939,13 @@ paths:
                   oneOf:
                     - type: integer
                     - type: string
-                shipId:
+                shipmentID:
                   oneOf:
                     - type: integer
                     - type: string
                 required:
                   - poId
-                  - shipId
+                  - shipmentID
 
       responses:
         "201":
@@ -990,7 +990,7 @@ paths:
                       - type: string
                       - type: integer
                     example: 401
-                  shipId:
+                  shipmentID:
                     description: The Id of the shipment of relevant purchase order.
                   details:
                     type: array
@@ -1332,7 +1332,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: JWT token obtained from the /api/auth/login endpoint
-      
+
   schemas:
     CustomerOrder:
       type: object
@@ -1343,8 +1343,8 @@ components:
             - type: string
             - type: integer
           example: 1001
-        orderDate:
-          description: "The date the order was placed"
+        orderTime:
+          description: "The Time the order was placed"
           type: string
           format: date-time
           example: "2025-04-17 11:05:38"
@@ -1355,7 +1355,7 @@ components:
             - Pending
             - Pick and Pack
             - Shipped
-          example: "Pick and"
+          example: "Pick and Pack"
         address:
           description: "The address where the order should be placed"
           type: string
@@ -1387,8 +1387,8 @@ components:
       required:
         - address
       properties:
-        orderDate:
-          description: "The date the order was placed, if not given, take current timestamp as default"
+        orderTime:
+          description: "The Time the order was placed, if not given, take current timestamp as default"
           type: string
           format: date-time
           example: "2025-04-17 11:05:38"
@@ -1400,7 +1400,7 @@ components:
     InboundShipment:
       type: object
       properties:
-        shipID:
+        shipmentID:
           oneOf:
             - type: string
             - type: integer
@@ -1412,7 +1412,7 @@ components:
     InboundShipmentDetails:
       type: object
       properties:
-        shipId:
+        shipmentID:
           oneOf:
             - type: string
             - type: integer
@@ -1453,7 +1453,7 @@ components:
           format: int32
           description: ID of the related stock item
           example: 101
-        inspectDate:
+        inspectTime:
           type: string
           format: date-time
           description: Date and time of the inspection
@@ -1543,7 +1543,7 @@ components:
           format: int32
           description: Auto-incremented primary key for the shipment
           example: 1
-        shipmentDate:
+        shipmentTime:
           type: string
           format: date-time
           description: Date and time the shipment was created
@@ -1625,17 +1625,17 @@ components:
           type: integer
           example: 1
           description: Auto-incremented primary key for the purchase order.
-        shipId:
+        shipmentID:
           type: integer
           example: 1001
-          description: Foreign key referencing the shipment (inboundShipment.shipId).
+          description: Foreign key referencing the shipment (inboundShipment.shipmentID).
         createdAt:
           type: string
           format: date-time
           example: "2025-04-25T14:35:00Z"
           description: Timestamp when the purchase order was created.
       required:
-        - shipId
+        - shipmentID
     Stock:
       type: object
       properties:
