@@ -13,11 +13,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { shipmentDate, carrier, trackingNumber } = body;
+  const { shipmentTime, carrier, trackingNumber } = body;
 
   try {
     const newOutboundShipment = await db.insert(outboundShipment).values({
-      shipmentDate: shipmentDate,
+      shipmentTime: shipmentTime,
       carrier: carrier,
       trackingNumber: trackingNumber,
     });
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const body = await request.json();
-  const { shipmentId, shipmentDate, carrier, trackingNumber } = body;
+  const { shipmentId, shipmentTime, carrier, trackingNumber } = body;
   if (!shipmentId) {
     return NextResponse.json(
       { message: "Missing required fields" },
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest) {
     );
   }
   const updateData: Record<string, string> = {};
-  if (shipmentDate !== undefined) updateData.shipmentDate = shipmentDate;
+  if (shipmentTime !== undefined) updateData.shipmentTime = shipmentTime;
   if (carrier !== undefined) updateData.carrier = carrier;
   if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
 
