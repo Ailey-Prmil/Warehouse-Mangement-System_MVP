@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { Eye, Search } from "lucide-react";
 
 // Define the LocationBin type to match the database schema
@@ -23,7 +23,7 @@ interface LocationBin {
   section: string;
   shelf: string;
   capacity: number;
-  used: number;
+  // used: number;
 }
 
 export default function LocationBinPage() {
@@ -103,7 +103,7 @@ export default function LocationBinPage() {
                   <TableHead>Section</TableHead>
                   <TableHead>Shelf</TableHead>
                   <TableHead>Capacity</TableHead>
-                  <TableHead>Utilization</TableHead>
+                  {/* <TableHead>Utilization</TableHead> */}
                   <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -124,7 +124,7 @@ export default function LocationBinPage() {
                       <TableCell>{location.section}</TableCell>
                       <TableCell>{location.shelf}</TableCell>
                       <TableCell>{location.capacity}</TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
                             <div
@@ -158,7 +158,7 @@ export default function LocationBinPage() {
                             %
                           </Badge>
                         </div>
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <div className="flex justify-center">
                           <Button asChild size="icon" variant="ghost">
