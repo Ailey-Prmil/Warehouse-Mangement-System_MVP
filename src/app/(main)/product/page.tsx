@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Eye, Search } from "lucide-react";
 
@@ -24,7 +23,6 @@ interface Product {
   unitOfMeasure: string;
   createdAt: string;
   updatedAt: string;
-  stock: number;
 }
 
 export default function ProductPage() {
@@ -102,7 +100,6 @@ export default function ProductPage() {
                   <TableHead>Unit of Measure</TableHead>
                   <TableHead>Created At</TableHead>
                   <TableHead>Updated At</TableHead>
-                  <TableHead>Stock</TableHead>
                   <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -124,19 +121,6 @@ export default function ProductPage() {
                       <TableCell>{product.unitOfMeasure}</TableCell>
                       <TableCell>{product.createdAt}</TableCell>
                       <TableCell>{product.updatedAt}</TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            product.stock > 50
-                              ? "bg-green-100 text-green-800 hover:bg-green-100"
-                              : product.stock > 20
-                              ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                              : "bg-red-100 text-red-800 hover:bg-red-100"
-                          }
-                        >
-                          {product.stock}
-                        </Badge>
-                      </TableCell>
                       <TableCell>
                         <div className="flex justify-center">
                           <Button asChild size="icon" variant="ghost">

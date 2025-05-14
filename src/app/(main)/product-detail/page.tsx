@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Package } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 
-// Define interfaces based on the existing APIs
+// Define interfaces based on the provided specifications
 interface Product {
   productId: string;
   name: string;
@@ -23,10 +23,6 @@ interface Product {
   unitOfMeasure: string;
   createdAt: string;
   updatedAt: string;
-  category?: string;
-  description?: string;
-  price?: number;
-  stock: number;
 }
 
 interface LocationBin {
@@ -35,16 +31,39 @@ interface LocationBin {
   section: string;
   shelf: string;
   capacity: number;
-  used: number;
-  productId?: string; // optional to match existing schema
+}
+
+interface Stock {
+  stockId: string;
+  productId: string;
+  locId: string;
+  quantity: number;
+  lastUpdated: string;
 }
 
 interface Inspection {
-  inspectId: string | number;
-  stockId: string | number;
+  inspectId: string;
+  stockId: string;
   inspectDate: string | null;
   defectQuantity: number;
   reason: string | null;
+}
+
+// Combined structure for inspections with stock information
+interface InspectionWithStock {
+  inspection: Inspection;
+  stock: {
+    stockId: string;
+    productId: string;
+    quantity: number;
+    locId?: string;
+  };
+}
+
+// Define combined data structure for locations with stock
+interface StockWithLocation {
+  stock: Stock;
+  location: LocationBin;
 }
 
 export default function ProductDetailPage() {
@@ -52,8 +71,9 @@ export default function ProductDetailPage() {
   const productId = searchParams.get("id");
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [locations, setLocations] = useState<LocationBin[]>([]);
-  const [inspections, setInspections] = useState<Inspection[]>([]);
+  const [stockLocations, setStockLocations] = useState<StockWithLocation[]>([]);
+  const [inspections, setInspections] = useState<InspectionWithStock[]>([]);
+  const [totalStock, setTotalStock] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -75,31 +95,31 @@ export default function ProductDetailPage() {
         const productData: Product = await productResponse.json();
         setProduct(productData);
 
-        // Fetch locations
-        const locationsResponse = await fetch("/api/location");
-        if (!locationsResponse.ok) {
-          throw new Error("Failed to fetch locations");
+        // Fetch stock data for this product, including location details
+        const stockResponse = await fetch(`/api/stock/${productId}`);
+        if (!stockResponse.ok) {
+          throw new Error("Failed to fetch stock data");
         }
-        const locationsData: LocationBin[] = await locationsResponse.json();
+        const stockData: StockWithLocation[] = await stockResponse.json();
+        setStockLocations(stockData);
 
-        // Filter locations for this specific product
-        const productLocations = locationsData.filter(
-          (loc) => loc.productId === productId
+        // Calculate total stock from all locations
+        const total = stockData.reduce(
+          (sum, item) => sum + item.stock.quantity,
+          0
         );
-        setLocations(productLocations);
+        setTotalStock(total);
 
-        // Fetch inspections
-        const inspectionsResponse = await fetch("/api/inspection");
-        if (!inspectionsResponse.ok) {
-          throw new Error("Failed to fetch inspections");
-        }
-        const inspectionsData: Inspection[] = await inspectionsResponse.json();
+        // Fetch inspections directly by product ID
+        // const inspectionsResponse = await fetch(`/api/inspection/${productId}`);
 
-        // Filter inspections for this specific product
-        const productInspections = inspectionsData.filter(
-          (insp) => insp.stockId === productId
-        );
-        setInspections(productInspections);
+        // if (!inspectionsResponse.ok) {
+        //   throw new Error("Failed to fetch inspections");
+        // }
+
+        // const inspectionsData: InspectionWithStock[] =
+        //   await inspectionsResponse.json();
+        // setInspections(inspectionsData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -136,6 +156,13 @@ export default function ProductDetailPage() {
     );
   }
 
+  // Calculate defect rate
+  const totalDefects = inspections.reduce(
+    (sum, item) => sum + item.inspection.defectQuantity,
+    0
+  );
+  const defectRate = totalStock > 0 ? (totalDefects / totalStock) * 100 : 0;
+
   return (
     <div className="container mx-auto">
       <div className="mb-8">
@@ -149,7 +176,7 @@ export default function ProductDetailPage() {
           <div>
             <h1 className="text-3xl font-bold">{product.name}</h1>
             <p className="text-muted-foreground">
-              {product.sku} • {product.category || "Uncategorized"}
+              {product.sku} • {product.unitOfMeasure}
             </p>
           </div>
         </div>
@@ -182,30 +209,16 @@ export default function ProductDetailPage() {
               </div>
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">
-                  Price
-                </dt>
-                <dd>${product.price?.toFixed(2) || "N/A"}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-muted-foreground">
                   Created At
                 </dt>
-                <dd>{product.createdAt}</dd>
+                <dd>{new Date(product.createdAt).toLocaleString()}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-muted-foreground">
                   Updated At
                 </dt>
-                <dd>{product.updatedAt}</dd>
+                <dd>{new Date(product.updatedAt).toLocaleString()}</dd>
               </div>
-              {product.description && (
-                <div className="col-span-2">
-                  <dt className="text-sm font-medium text-muted-foreground">
-                    Description
-                  </dt>
-                  <dd>{product.description}</dd>
-                </div>
-              )}
             </dl>
           </CardContent>
         </Card>
@@ -220,17 +233,17 @@ export default function ProductDetailPage() {
                 <div className="text-sm font-medium text-muted-foreground">
                   Total Stock
                 </div>
-                <div className="mt-1 text-2xl font-bold">{product.stock}</div>
+                <div className="mt-1 text-2xl font-bold">{totalStock}</div>
               </div>
               <div className="rounded-lg border p-3">
                 <div className="text-sm font-medium text-muted-foreground">
                   Locations
                 </div>
                 <div className="mt-1 text-2xl font-bold">
-                  {locations.length}
+                  {stockLocations.length}
                 </div>
               </div>
-              <div className="rounded-lg border p-3">
+              {/* <div className="rounded-lg border p-3">
                 <div className="text-sm font-medium text-muted-foreground">
                   Inspections
                 </div>
@@ -243,25 +256,15 @@ export default function ProductDetailPage() {
                   Defect Rate
                 </div>
                 <div className="mt-1 text-2xl font-bold">
-                  {inspections.length > 0
-                    ? (
-                        (inspections.reduce(
-                          (sum, insp) => sum + insp.defectQuantity,
-                          0
-                        ) /
-                          product.stock) *
-                        100
-                      ).toFixed(1)
-                    : "N/A"}
-                  %
+                  {totalStock > 0 ? defectRate.toFixed(1) : "N/A"}%
                 </div>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {locations.length > 0 && (
+      {stockLocations.length > 0 && (
         <div className="mt-6 grid gap-6">
           <Card>
             <CardHeader>
@@ -271,54 +274,72 @@ export default function ProductDetailPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Stock ID</TableHead>
                     <TableHead>Location ID</TableHead>
                     <TableHead>Aisle</TableHead>
                     <TableHead>Section</TableHead>
                     <TableHead>Shelf</TableHead>
-                    <TableHead>Capacity</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Last Updated</TableHead>
                     <TableHead>Utilization</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {locations.map((location) => (
-                    <TableRow key={location.locId}>
+                  {stockLocations.map((item) => (
+                    <TableRow key={item.stock.stockId}>
                       <TableCell className="font-medium">
-                        {location.locId}
+                        {item.stock.stockId}
                       </TableCell>
-                      <TableCell>{location.aisle}</TableCell>
-                      <TableCell>{location.section}</TableCell>
-                      <TableCell>{location.shelf}</TableCell>
-                      <TableCell>{location.capacity}</TableCell>
+                      <TableCell>{item.location.locId}</TableCell>
+                      <TableCell>{item.location.aisle}</TableCell>
+                      <TableCell>{item.location.section}</TableCell>
+                      <TableCell>{item.location.shelf}</TableCell>
+                      <TableCell>{item.stock.quantity}</TableCell>
+                      <TableCell>
+                        {new Date(item.stock.lastUpdated).toLocaleString()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
                             <div
                               className={`h-full ${
-                                (location.used / location.capacity) * 100 < 50
+                                (item.stock.quantity / item.location.capacity) *
+                                  100 <
+                                50
                                   ? "bg-green-500"
-                                  : (location.used / location.capacity) * 100 <
+                                  : (item.stock.quantity /
+                                      item.location.capacity) *
+                                      100 <
                                     80
                                   ? "bg-yellow-500"
                                   : "bg-red-500"
                               }`}
                               style={{
                                 width: `${
-                                  (location.used / location.capacity) * 100
+                                  (item.stock.quantity /
+                                    item.location.capacity) *
+                                  100
                                 }%`,
                               }}
                             />
                           </div>
                           <Badge
                             className={
-                              (location.used / location.capacity) * 100 < 50
+                              (item.stock.quantity / item.location.capacity) *
+                                100 <
+                              50
                                 ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                : (location.used / location.capacity) * 100 < 80
+                                : (item.stock.quantity /
+                                    item.location.capacity) *
+                                    100 <
+                                  80
                                 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
                                 : "bg-red-100 text-red-800 hover:bg-red-100"
                             }
                           >
                             {Math.round(
-                              (location.used / location.capacity) * 100
+                              (item.stock.quantity / item.location.capacity) *
+                                100
                             )}
                             %
                           </Badge>
@@ -344,32 +365,40 @@ export default function ProductDetailPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Inspection ID</TableHead>
+                    <TableHead>Stock ID</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead>Defect Quantity</TableHead>
                     <TableHead>Reason</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {inspections.map((inspection) => (
-                    <TableRow key={String(inspection.inspectId)}>
+                  {inspections.map((item) => (
+                    <TableRow key={String(item.inspection.inspectId)}>
                       <TableCell className="font-medium">
-                        {String(inspection.inspectId)}
+                        {String(item.inspection.inspectId)}
                       </TableCell>
-                      <TableCell>{inspection.inspectDate || "N/A"}</TableCell>
+                      <TableCell>{String(item.inspection.stockId)}</TableCell>
+                      <TableCell>
+                        {item.inspection.inspectDate
+                          ? new Date(
+                              item.inspection.inspectDate
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </TableCell>
                       <TableCell>
                         <Badge
                           className={
-                            inspection.defectQuantity === 0
+                            item.inspection.defectQuantity === 0
                               ? "bg-green-100 text-green-800"
-                              : inspection.defectQuantity < 3
+                              : item.inspection.defectQuantity < 3
                               ? "bg-yellow-100 text-yellow-800"
                               : "bg-red-100 text-red-800"
                           }
                         >
-                          {inspection.defectQuantity}
+                          {item.inspection.defectQuantity}
                         </Badge>
                       </TableCell>
-                      <TableCell>{inspection.reason || "N/A"}</TableCell>
+                      <TableCell>{item.inspection.reason || "N/A"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
