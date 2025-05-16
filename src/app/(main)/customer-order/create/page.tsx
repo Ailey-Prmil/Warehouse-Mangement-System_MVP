@@ -1,43 +1,64 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
-import { BackButton } from "@/components/back-button"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { BackButton } from "@/components/back-button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function CreateCustomerOrderPage() {
-  const router = useRouter()
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    customerName: "",
-    customerEmail: "",
-    customerPhone: "",
+    orderDate: new Date().toISOString().substring(0, 10),
     address: "",
-    product: "",
-    quantity: "",
-  })
+  });
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (error) setError(null);
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // In a real application, you would send this data to your API
-    console.log("Form submitted:", formData)
-
-    // Redirect back to the customer orders list
-    router.push("/customer-order")
-  }
-
-  // Reduced mock data
-  const products = [{ id: "P001", name: "Wireless Headphones", price: 129.99 }]
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      if (!formData.address) {
+        throw new Error("Please enter a shipping address");
+      }
+      const payload = {
+        orderDate: formData.orderDate,
+        address: formData.address,
+      };
+      const response = await fetch("/api/customer-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create customer order");
+      }
+      router.push("/customer-order");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-8">
@@ -48,7 +69,12 @@ export default function CreateCustomerOrderPage() {
         <h1 className="mt-4 text-3xl font-bold">Create Customer Order</h1>
         <p className="text-muted-foreground">Create a new customer order</p>
       </div>
-
+      {error && (
+        <Alert variant="destructive" className="mb-6 w-full max-w-2xl">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       <form onSubmit={handleSubmit} className="w-full max-w-2xl">
         <Card>
           <CardHeader>
@@ -56,88 +82,43 @@ export default function CreateCustomerOrderPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="customerName">Customer Name</Label>
+              <Label htmlFor="orderDate">Order Date</Label>
               <Input
-                id="customerName"
-                placeholder="Enter customer name"
-                value={formData.customerName}
-                onChange={(e) => handleChange("customerName", e.target.value)}
+                id="orderDate"
+                type="date"
+                value={formData.orderDate}
+                onChange={(e) => handleChange("orderDate", e.target.value)}
                 required
+                disabled={isSubmitting}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="customerEmail">Email</Label>
-              <Input
-                id="customerEmail"
-                type="email"
-                placeholder="Enter email address"
-                value={formData.customerEmail}
-                onChange={(e) => handleChange("customerEmail", e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="customerPhone">Phone</Label>
-              <Input
-                id="customerPhone"
-                placeholder="Enter phone number"
-                value={formData.customerPhone}
-                onChange={(e) => handleChange("customerPhone", e.target.value)}
-                required
-              />
-            </div>
-
             <div className="space-y-2">
               <Label htmlFor="address">Shipping Address</Label>
-              <Textarea
+              <Input
                 id="address"
                 placeholder="Enter shipping address"
                 value={formData.address}
                 onChange={(e) => handleChange("address", e.target.value)}
-                rows={4}
                 required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="product">Product</Label>
-              <Select value={formData.product} onValueChange={(value) => handleChange("product", value)} required>
-                <SelectTrigger id="product">
-                  <SelectValue placeholder="Select product" />
-                </SelectTrigger>
-                <SelectContent>
-                  {products.map((product) => (
-                    <SelectItem key={product.id} value={product.id}>
-                      {product.name} - ${product.price.toFixed(2)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="quantity">Quantity</Label>
-              <Input
-                id="quantity"
-                type="number"
-                min="1"
-                placeholder="Enter quantity"
-                value={formData.quantity}
-                onChange={(e) => handleChange("quantity", e.target.value)}
-                required
+                disabled={isSubmitting}
               />
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => router.push("/customer-order")}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.push("/customer-order")}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">Create Order</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Order"}
+            </Button>
           </CardFooter>
         </Card>
       </form>
     </div>
-  )
+  );
 }

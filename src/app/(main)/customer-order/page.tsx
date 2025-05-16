@@ -14,16 +14,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Search } from "lucide-react";
+import { Eye, Search, Edit } from "lucide-react";
 
 // Define the CustomerOrder type to match the database schema
 interface CustomerOrder {
   customerOrderId: string | number; // Allow number in case customerOrderId is numeric
-  orderDate: string;
+  orderTime: string; // Changed from orderDate to match the actual field name in schema
   address: string;
   status: string;
-  // items: number;
-  // total: number;
 }
 
 export default function CustomerOrderPage() {
@@ -65,9 +63,16 @@ export default function CustomerOrderPage() {
 
   return (
     <div className="container mx-auto py-6 pl-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Customer Orders</h1>
-        <p className="text-muted-foreground">View and manage customer orders</p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Customer Orders</h1>
+          <p className="text-muted-foreground">
+            View and manage customer orders
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/customer-order/create">Create</Link>
+        </Button>
       </div>
 
       <Card className="mb-6">
@@ -120,7 +125,7 @@ export default function CustomerOrderPage() {
                       <TableCell className="text-center">
                         {String(order.customerOrderId)}
                       </TableCell>
-                      <TableCell>{order.orderDate}</TableCell>
+                      <TableCell>{order.orderTime}</TableCell>
                       <TableCell className="max-w-xs truncate">
                         {order.address}
                       </TableCell>
@@ -142,13 +147,21 @@ export default function CustomerOrderPage() {
                       {/* <TableCell>{order.items}</TableCell>
                       <TableCell>${order.total.toFixed(2)}</TableCell> */}
                       <TableCell>
-                        <div className="flex justify-center">
+                        <div className="flex justify-center gap-2">
                           <Button asChild size="icon" variant="ghost">
                             <Link
                               href={`/customer-order-detail?id=${order.customerOrderId}`}
                             >
                               <Eye className="h-4 w-4" />
                               <span className="sr-only">View</span>
+                            </Link>
+                          </Button>
+                          <Button asChild size="icon" variant="ghost">
+                            <Link
+                              href={`/customer-order/update?id=${order.customerOrderId}`}
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Edit</span>
                             </Link>
                           </Button>
                         </div>
