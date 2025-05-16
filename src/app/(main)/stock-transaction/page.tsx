@@ -14,7 +14,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Search } from "lucide-react";
+import { Edit, Search, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 // Define the StockTransaction type to match the database schema
 interface StockTransaction {
@@ -35,28 +47,68 @@ export default function StockTransactionPage() {
   >([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(
+    null
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
   // Fetch stock transactions from the API
   useEffect(() => {
-    async function fetchStockTransactions() {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/stock-transaction");
-        if (!response.ok) {
-          throw new Error("Failed to fetch stock transactions");
-        }
-        const data: StockTransaction[] = await response.json();
-        console.log("Fetched data:", data); // Log to inspect the response
-        setStockTransactions(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchStockTransactions();
   }, []);
+
+  async function fetchStockTransactions() {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/stock-transaction");
+      if (!response.ok) {
+        throw new Error("Failed to fetch stock transactions");
+      }
+      const data: StockTransaction[] = await response.json();
+      setStockTransactions(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Delete a stock transaction
+  async function handleDelete(id: string | number) {
+    try {
+      setIsDeleting(true);
+      const response = await fetch(`/api/stock-transaction/${id}`, {
+        method: "DELETE",
+      });
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(responseData.message || "Failed to delete transaction");
+      }
+
+      // Show success toast
+      toast({
+        title: "Success",
+        description: "Transaction deleted successfully",
+        variant: "default",
+      });
+
+      // Refresh the data
+      fetchStockTransactions();
+    } catch (err) {
+      // Show error toast
+      toast({
+        title: "Error",
+        description:
+          err instanceof Error ? err.message : "Failed to delete transaction",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setTransactionToDelete(null);
+    }
+  }
 
   const filteredTransactions = stockTransactions.filter((transaction) => {
     // Convert fields to strings and handle null/undefined
@@ -156,9 +208,9 @@ export default function StockTransactionPage() {
                       </TableCell>
                       <TableCell>{transaction.refId || "N/A"}</TableCell>
                       <TableCell>{transaction.quantity}</TableCell>
-                      <TableCell>{transaction.transactionDate}</TableCell>
+                      <TableCell>{transaction.transactionDate}</TableCell>{" "}
                       <TableCell>
-                        <div className="flex justify-center">
+                        <div className="flex justify-center space-x-1">
                           <Button asChild size="icon" variant="ghost">
                             <Link
                               href={`/stock-transaction/update?id=${transaction.transactionId}`}
@@ -167,6 +219,41 @@ export default function StockTransactionPage() {
                               <span className="sr-only">Edit</span>
                             </Link>
                           </Button>
+
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this
+                                  transaction? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDelete(transaction.transactionId)
+                                  }
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
