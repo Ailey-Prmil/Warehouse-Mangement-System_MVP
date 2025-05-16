@@ -22,7 +22,6 @@ interface LocationBin {
   section: string;
   shelf: string;
   capacity: number;
-  // used: number;
 }
 
 interface Stock {
@@ -31,17 +30,20 @@ interface Stock {
   locId: number;
   quantity: number;
   lastUpdated: string;
-  // productName?: string;
+}
+
+interface StockWithProductName extends Stock {
+  productName?: string;
 }
 
 export default function LocationBinDetailPage() {
   const searchParams = useSearchParams();
   const locationId = searchParams.get("id");
-
   const [location, setLocation] = useState<LocationBin | null>(null);
-  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [stocks, setStocks] = useState<StockWithProductName[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [usedSpace, setUsedSpace] = useState(0);
 
   useEffect(() => {
     async function fetchLocationDetails() {
@@ -60,15 +62,46 @@ export default function LocationBinDetailPage() {
           throw new Error("Failed to fetch location details");
         }
         const locationData: LocationBin = await locationResponse.json();
-        setLocation(locationData);
-
-        // Fetch stock data
+        setLocation(locationData); // Fetch stock data
         const stockResponse = await fetch(`/api/stock?locId=${locationId}`);
         if (!stockResponse.ok) {
           throw new Error("Failed to fetch stock data");
         }
         const stockData: Stock[] = await stockResponse.json();
-        setStocks(stockData);
+        console.log(
+          `Fetched ${stockData.length} stocks for location ID ${locationId}`
+        );
+
+        // Calculate total used space
+        const totalUsed = stockData.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        );
+        setUsedSpace(totalUsed);
+
+        // Fetch product names for each stock item
+        const enhancedStockData = await Promise.all(
+          stockData.map(async (stockItem) => {
+            try {
+              const productResponse = await fetch(
+                `/api/product/${stockItem.productId}`
+              );
+              if (productResponse.ok) {
+                const productData = await productResponse.json();
+                return {
+                  ...stockItem,
+                  productName: productData.name,
+                };
+              }
+              return { ...stockItem, productName: "Unknown Product" };
+            } catch (error) {
+              console.error("Error fetching product:", error);
+              return { ...stockItem, productName: "Unknown Product" };
+            }
+          })
+        );
+
+        setStocks(enhancedStockData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -105,12 +138,12 @@ export default function LocationBinDetailPage() {
     );
   }
 
-  // const utilizationPercentage = Math.round(
-  //   (location.used / location.capacity) * 100
-  // );
+  const utilizationPercentage = Math.round(
+    (usedSpace / location.capacity) * 100
+  );
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto py-8">
       <div className="mb-8">
         <div className="flex items-center gap-2">
           <BackButton href="/location-bin" />
@@ -166,101 +199,110 @@ export default function LocationBinDetailPage() {
                 </dt>
                 <dd>{location.capacity} units</dd>
               </div>
-              {/* <div>
+              <div>
                 <dt className="text-sm font-medium text-muted-foreground">
                   Used
                 </dt>
-                <dd>{location.used} units</dd>
-              </div> */}
+                <dd>{usedSpace} units</dd>
+              </div>
             </dl>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Utilization Summary</CardTitle>
+            <CardTitle>Utilization</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-6 grid grid-cols-3 gap-4">
-              <div className="rounded-lg border p-3">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Capacity
-                </div>
-                <div className="mt-1 text-2xl font-bold">
-                  {location.capacity}
-                </div>
-              </div>
-              {/* <div className="rounded-lg border p-3">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Used
-                </div>
-                <div className="mt-1 text-2xl font-bold">{location.used}</div>
-              </div>
-              <div className="rounded-lg border p-3">
-                <div className="text-sm font-medium text-muted-foreground">
-                  Available
-                </div>
-                <div className="mt-1 text-2xl font-bold">
-                  {location.capacity - location.used}
-                </div>
-              </div> */}
-            </div>
-            {/* <div className="flex items-center gap-2">
-              <div className="h-2 w-24 overflow-hidden rounded-full bg-gray-200">
+            <div className="flex flex-col items-center justify-center">
+              <div className="relative flex h-40 w-40 items-center justify-center rounded-full bg-gray-100">
                 <div
-                  className={`h-full ${
-                    utilizationPercentage < 50
-                      ? "bg-green-500"
-                      : utilizationPercentage < 80
-                      ? "bg-yellow-500"
-                      : "bg-red-500"
-                  }`}
-                  style={{ width: `${utilizationPercentage}%` }}
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background: `conic-gradient(${
+                      utilizationPercentage < 50
+                        ? "#22c55e"
+                        : utilizationPercentage < 80
+                        ? "#eab308"
+                        : "#ef4444"
+                    } ${utilizationPercentage}%, transparent 0)`,
+                    clipPath: "circle(50% at center)",
+                  }}
                 />
+                <div className="relative z-10 flex h-32 w-32 items-center justify-center rounded-full bg-white">
+                  <div className="text-center">
+                    <div className="text-3xl font-bold">
+                      {utilizationPercentage}%
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Utilized
+                    </div>
+                  </div>
+                </div>
               </div>
-              <Badge
-                className={
-                  utilizationPercentage < 50
-                    ? "bg-green-100 text-green-800 hover:bg-green-100"
-                    : utilizationPercentage < 80
-                    ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                    : "bg-red-100 text-red-800 hover:bg-red-100"
-                }
-              >
-                {utilizationPercentage}%
-              </Badge>
-            </div> */}
+              <div className="mt-4 grid w-full grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg border p-2">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Capacity
+                  </div>
+                  <div className="text-xl font-bold">{location.capacity}</div>
+                </div>
+                <div className="rounded-lg border p-2">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Used
+                  </div>
+                  <div className="text-xl font-bold">{usedSpace}</div>
+                </div>
+                <div className="rounded-lg border p-2">
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Available
+                  </div>
+                  <div className="text-xl font-bold">
+                    {location.capacity - usedSpace}
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {stocks.length > 0 && (
-        <div className="mt-6 grid gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Stored Products</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
+      <div className="mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Stored Products</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Stock ID</TableHead>
+                  <TableHead>Product ID</TableHead>
+                  <TableHead>Product Name</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Last Updated</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stocks.length === 0 ? (
                   <TableRow>
-                    <TableHead>Stock ID</TableHead>
-                    <TableHead>Product ID</TableHead>
-                    {/* <TableHead>Product Name</TableHead> */}
-                    <TableHead>Quantity</TableHead>
-                    <TableHead>Last Updated</TableHead>
+                    <TableCell
+                      colSpan={5}
+                      className="text-center py-4 text-muted-foreground"
+                    >
+                      No products stored in this location
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stocks.map((stock) => (
+                ) : (
+                  stocks.map((stock) => (
                     <TableRow key={stock.stockId}>
                       <TableCell className="font-medium">
                         {stock.stockId}
                       </TableCell>
                       <TableCell>{stock.productId}</TableCell>
-                      {/* <TableCell>
+                      <TableCell>
                         {stock.productName || "Unknown Product"}
-                      </TableCell> */}
+                      </TableCell>
                       <TableCell>
                         <Badge
                           className={
@@ -278,13 +320,13 @@ export default function LocationBinDetailPage() {
                         {new Date(stock.lastUpdated).toLocaleString()}
                       </TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
