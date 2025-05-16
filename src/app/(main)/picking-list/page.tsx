@@ -15,6 +15,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Edit, Search, Trash } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { formatDateForDisplay } from "@/lib/date-utils";
 
 // Define the PickingList type to match the database schema
 interface PickingList {
@@ -28,28 +41,37 @@ export default function PickingListPage() {
   const [pickingLists, setPickingLists] = useState<PickingList[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
 
   // Fetch picking lists from the API
   useEffect(() => {
     async function fetchPickingLists() {
       try {
         setLoading(true);
+        setError(null);
         const response = await fetch("/api/picking-list");
         if (!response.ok) {
           throw new Error("Failed to fetch picking lists");
         }
         const data: PickingList[] = await response.json();
-        console.log("Fetched data:", data); // Log to inspect the response
         setPickingLists(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        const errorMessage =
+          err instanceof Error ? err.message : "An error occurred";
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     }
 
     fetchPickingLists();
-  }, []);
+  }, [toast]);
 
   const filteredPickingLists = pickingLists.filter((list) => {
     // Convert fields to strings and handle null/undefined
@@ -57,13 +79,11 @@ export default function PickingListPage() {
     const search = searchTerm.toLowerCase();
 
     return picklistId.includes(search);
-  });
-
-  // Handle delete picking list
+  }); // Handle delete picking list
   const handleDelete = async (picklistId: string | number) => {
-    if (!confirm("Are you sure you want to delete this picking list?")) return;
-
     try {
+      setIsDeleting(true);
+
       const response = await fetch("/api/picking-list", {
         method: "DELETE",
         headers: {
@@ -81,8 +101,23 @@ export default function PickingListPage() {
       setPickingLists((prev) =>
         prev.filter((l) => l.picklistId !== picklistId)
       );
+
+      // Show success toast
+      toast({
+        title: "Success",
+        description: "Picking list deleted successfully",
+        variant: "default",
+      });
     } catch (err) {
-      alert(err instanceof Error ? err.message : "An error occurred");
+      // Show error toast
+      toast({
+        title: "Error",
+        description:
+          err instanceof Error ? err.message : "Failed to delete picking list",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -147,16 +182,12 @@ export default function PickingListPage() {
                     <TableRow key={String(list.picklistId)}>
                       <TableCell className="text-center">
                         {String(list.picklistId)}
+                      </TableCell>{" "}
+                      <TableCell>
+                        {formatDateForDisplay(list.generatedAt) || "N/A"}
                       </TableCell>
                       <TableCell>
-                        {list.generatedAt
-                          ? new Date(list.generatedAt).toLocaleString()
-                          : "N/A"}
-                      </TableCell>
-                      <TableCell>
-                        {list.doneAt
-                          ? new Date(list.doneAt).toLocaleString()
-                          : "-"}
+                        {formatDateForDisplay(list.doneAt) || "-"}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -178,16 +209,40 @@ export default function PickingListPage() {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Link>
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() => handleDelete(list.picklistId)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                          </Button>{" "}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this picking
+                                  list? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(list.picklistId)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
