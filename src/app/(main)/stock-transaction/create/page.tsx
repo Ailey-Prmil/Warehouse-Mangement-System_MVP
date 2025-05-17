@@ -277,7 +277,7 @@ export default function CreateStockTransactionPage() {
                 <Label htmlFor="refId">Reference ID (Optional)</Label>
                 <Input
                   id="refId"
-                  placeholder="e.g., PO ID or Order ID"
+                  placeholder="Enter reference ID (PO ID or Order ID)"
                   value={formData.refId}
                   onChange={(e) => handleChange("refId", e.target.value)}
                   disabled={isLoading || isSubmitting}

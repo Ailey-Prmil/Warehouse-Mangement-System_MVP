@@ -13,7 +13,20 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Edit, Eye, Search, Trash } from "lucide-react";
+import { Edit, Eye, Search, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
+import { formatDateForDisplay } from "@/lib/date-utils";
 
 // Define the OrderTransaction type to match the database schema
 interface OrderTransaction {
@@ -24,11 +37,19 @@ interface OrderTransaction {
   transactionType: string;
 }
 
+// Helper function to format date for display
+function formatDateTime(dateString: string | null): string {
+  if (!dateString) return "N/A";
+  return formatDateForDisplay(dateString) || "N/A";
+}
+
 export default function OrderTransactionPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [transactions, setTransactions] = useState<OrderTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
 
   // Fetch order transactions from the API
   useEffect(() => {
@@ -71,12 +92,11 @@ export default function OrderTransactionPage() {
       transactionType.includes(search)
     );
   });
-
   // Handle delete transaction
   const handleDelete = async (transactionId: string | number) => {
-    if (!confirm("Are you sure you want to delete this transaction?")) return;
-
     try {
+      setIsDeleting(true);
+
       const response = await fetch("/api/order-transaction", {
         method: "DELETE",
         headers: {
@@ -94,8 +114,23 @@ export default function OrderTransactionPage() {
       setTransactions((prev) =>
         prev.filter((t) => t.transactionId !== transactionId)
       );
+
+      // Show success toast
+      toast({
+        title: "Success",
+        description: "Transaction deleted successfully",
+        variant: "default",
+      });
     } catch (err) {
-      alert(err instanceof Error ? err.message : "An error occurred");
+      // Show error toast
+      toast({
+        title: "Error",
+        description:
+          err instanceof Error ? err.message : "Failed to delete transaction",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -163,16 +198,11 @@ export default function OrderTransactionPage() {
                         {String(transaction.transactionId)}
                       </TableCell>
                       <TableCell>
-                        <Link
-                          href={`/customer-order-detail?id=${transaction.customerOrderId}`}
-                          className="text-blue-600 hover:underline"
-                        >
-                          {String(transaction.customerOrderId)}
-                        </Link>
+                        {String(transaction.customerOrderId)}
                       </TableCell>
                       <TableCell>{transaction.refId || "N/A"}</TableCell>
                       <TableCell>
-                        {transaction.transactionTime || "N/A"}
+                        {formatDateTime(transaction.transactionTime)}
                       </TableCell>
                       <TableCell>{transaction.transactionType}</TableCell>
                       <TableCell>
@@ -192,18 +222,42 @@ export default function OrderTransactionPage() {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Link>
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() =>
-                              handleDelete(transaction.transactionId)
-                            }
-                          >
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                          </Button>{" "}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this order
+                                  transaction? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDelete(transaction.transactionId)
+                                  }
+                                  className="bg-red-600 hover:bg-red-700"
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
