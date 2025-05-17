@@ -170,14 +170,14 @@ export default function OutboundShipmentPage() {
                       <TableCell>{shipment.trackingNumber || "N/A"}</TableCell>
                       <TableCell>
                         <div className="flex justify-center space-x-2">
-                          <Button asChild size="icon" variant="ghost">
+                          {/* <Button asChild size="icon" variant="ghost">
                             <Link
                               href={`/outbound-shipment/view?id=${shipment.shipmentId}`}
                             >
                               <Eye className="h-4 w-4" />
                               <span className="sr-only">View</span>
                             </Link>
-                          </Button>
+                          </Button> */}
                           <Button asChild size="icon" variant="ghost">
                             <Link
                               href={`/outbound-shipment/update?id=${shipment.shipmentId}`}
