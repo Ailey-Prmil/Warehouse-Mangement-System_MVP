@@ -77,20 +77,46 @@ export default function CustomerOrderDetailPage() {
           throw new Error(`Order with ID ${orderId} not found`);
         }
 
-        setOrder(currentOrder);
-
-        // Fetch order details (products)
+        setOrder(currentOrder); // Fetch order details (products)
         try {
           const detailsResponse = await fetch(`/api/customer-order/${orderId}`);
           if (detailsResponse.ok) {
             const detailsData = await detailsResponse.json();
 
-            // Add mock product names and prices for display purposes
-            const enhancedDetails = detailsData.details.map(
-              (detail: OrderDetail) => ({
-                ...detail,
-                productName: `Product ${detail.productId}`,
-                price: 49.99, // Mock price
+            // Fetch actual product details for each product ID
+            const enhancedDetails = await Promise.all(
+              detailsData.details.map(async (detail: OrderDetail) => {
+                try {
+                  // Get the actual product data from the product API
+                  const productResponse = await fetch(
+                    `/api/product/${detail.productId}`
+                  );
+                  if (productResponse.ok) {
+                    const productData = await productResponse.json();
+                    return {
+                      ...detail,
+                      productName: productData.name, // Use the actual product name
+                      price: 49.99, // Still using mock price as it's not in the database
+                    };
+                  } else {
+                    // Fallback if product fetch fails
+                    return {
+                      ...detail,
+                      productName: `Product ${detail.productId}`,
+                      price: 49.99,
+                    };
+                  }
+                } catch (productError) {
+                  console.error(
+                    `Error fetching product ${detail.productId}:`,
+                    productError
+                  );
+                  return {
+                    ...detail,
+                    productName: `Product ${detail.productId}`,
+                    price: 49.99,
+                  };
+                }
               })
             );
 
