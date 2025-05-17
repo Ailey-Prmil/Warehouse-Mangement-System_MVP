@@ -13,14 +13,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Edit, Eye, Search, Trash } from "lucide-react";
+import { Edit, Eye, Search, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Define the OutboundShipment type to match the database schema
 interface OutboundShipment {
   shipmentId: string | number; // Allow number in case shipmentId is numeric
-  shipmentDate: string | null; // Nullable as it may not be set
-  carrier: string | null; // Nullable as it’s optional in POST
-  trackingNumber: string | null; // Nullable as it’s optional in POST
+  shipmentTime: string | null; // Field from database schema
+  carrier: string | null; // Nullable as it's optional in POST
+  trackingNumber: string | null; // Nullable as it's optional in POST
 }
 
 export default function OutboundShipmentPage() {
@@ -64,11 +75,8 @@ export default function OutboundShipmentPage() {
       trackingNumber.includes(search)
     );
   });
-
   // Handle delete shipment
   const handleDelete = async (shipmentId: string | number) => {
-    if (!confirm("Are you sure you want to delete this shipment?")) return;
-
     try {
       const response = await fetch("/api/outbound-shipment", {
         method: "DELETE",
@@ -132,6 +140,7 @@ export default function OutboundShipmentPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {" "}
                   <TableHead className="text-center">Shipment ID</TableHead>
                   <TableHead>Shipment Date</TableHead>
                   <TableHead>Carrier</TableHead>
@@ -153,8 +162,8 @@ export default function OutboundShipmentPage() {
                         {String(shipment.shipmentId)}
                       </TableCell>
                       <TableCell>
-                        {shipment.shipmentDate
-                          ? new Date(shipment.shipmentDate).toLocaleDateString()
+                        {shipment.shipmentTime
+                          ? new Date(shipment.shipmentTime).toLocaleDateString()
                           : "N/A"}
                       </TableCell>
                       <TableCell>{shipment.carrier || "N/A"}</TableCell>
@@ -176,16 +185,41 @@ export default function OutboundShipmentPage() {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Link>
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() => handleDelete(shipment.shipmentId)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                          </Button>{" "}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-red-600 hover:text-red-800"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this shipment?
+                                  This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleDelete(shipment.shipmentId)
+                                  }
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
