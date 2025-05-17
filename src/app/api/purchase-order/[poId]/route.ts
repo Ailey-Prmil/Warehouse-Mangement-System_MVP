@@ -13,40 +13,45 @@ type PoIdParams = {
 export async function GET(request: NextRequest, { params }: PoIdParams) {
   const poId = Number(params.poId);
 
-  // if (!poId) {
-  //   return NextResponse.json(
-  //     { message: "Purchasing Order ID is required" },
-  //     { status: 400 }
-  //   );
-  // }
+  if (!poId || isNaN(poId)) {
+    return NextResponse.json(
+      { message: "Valid Purchase Order ID is required" },
+      { status: 400 }
+    );
+  }
 
   try {
+    // First, check if the purchase order exists
+    const purchaseOrderRecord = await db
+      .select({
+        poId: purchaseOrder.poId,
+        shipmentId: purchaseOrder.shipmentId,
+        createdAt: purchaseOrder.createdAt
+      })
+      .from(purchaseOrder)
+      .where(eq(purchaseOrder.poId, poId))
+      .limit(1);
+    
+    if (!purchaseOrderRecord || purchaseOrderRecord.length === 0) {
+      return NextResponse.json(
+        { message: `No purchase order found with ID ${poId}` },
+        { status: 404 }
+      );
+    }
+
+    // Get all order details
     const purchaseOrderDetails = await db
       .select({
         productId: purchaseOrderDetail.productId,
         quantity: purchaseOrderDetail.orderedQuantity,
       })
       .from(purchaseOrderDetail)
-      .where(eq(purchaseOrderDetail.poId, poId));
-
-    if (!purchaseOrderDetails || purchaseOrderDetails.length === 0) {
-      return NextResponse.json(
-        { message: `No purchase order found with ID ${poId}` },
-        { status: 404 }
-      );
-    }
-    const shipIdRecord = await db
-      .select({
-        shipmentId: purchaseOrder.shipmentId,
-      })
-      .from(purchaseOrder)
-      .where(eq(purchaseOrder.poId, poId))
-      .limit(1);
-    const shipmentId = shipIdRecord[0]?.shipmentId;
+      .where(eq(purchaseOrderDetail.poId, poId));    // No need to check for null, as it will always be an array (possibly empty)
 
     const purchaseOrderDetailsResponse = {
       poId: poId,
-      shipId: shipmentId || null,
+      shipId: purchaseOrderRecord[0].shipmentId,
+      createdAt: purchaseOrderRecord[0].createdAt,
       details: purchaseOrderDetails,
     };
     return NextResponse.json(purchaseOrderDetailsResponse, {
