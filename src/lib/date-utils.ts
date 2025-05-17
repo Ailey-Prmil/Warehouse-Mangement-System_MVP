@@ -42,8 +42,19 @@ export function formatDateForDisplay(date: Date | string | null | undefined): st
       return 'Invalid date';
     }
     
-    // Format for display using browser's locale
-    return dateObj.toLocaleString();
+    // Custom UTC+7 timezone offset (7 hours)
+    const utcPlus7Date = new Date(dateObj.getTime() + (7 * 60 * 60 * 1000));
+    
+    // Format for display using browser's locale with UTC+7 time
+    return utcPlus7Date.toLocaleString(undefined, {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      hour12: false
+    });
   } catch (error) {
     console.error('Error formatting date for display:', error);
     return 'Invalid date';
