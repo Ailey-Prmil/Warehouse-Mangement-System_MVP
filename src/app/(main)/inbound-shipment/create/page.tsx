@@ -1,40 +1,69 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { BackButton } from "@/components/back-button"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { BackButton } from "@/components/back-button";
 
 export default function CreateInboundShipmentPage() {
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState({
     purchaseOrder: "",
     shipmentDate: "",
     supplier: "",
-  })
+  });
 
   const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // In a real application, you would send this data to your API
-    console.log("Form submitted:", formData)
+    try {
+      // Create new inbound shipment
+      const response = await fetch("/api/inbound-shipment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
 
-    // Redirect back to the inbound shipments list
-    router.push("/inbound-shipment")
-  }
+      if (!response.ok) {
+        throw new Error("Failed to create inbound shipment");
+      }
+
+      const data = await response.json();
+
+      // Redirect to the inbound shipment detail page
+      router.push(`/inbound-shipment-detail?id=${data.insertId}`);
+    } catch (error) {
+      console.error("Error creating inbound shipment:", error);
+      alert(error instanceof Error ? error.message : "An error occurred");
+    }
+  };
 
   // Reduced mock data
-  const purchaseOrders = [{ id: "PO001", date: "2023-06-15" }]
-  const suppliers = [{ id: "SUP001", name: "Tech Supplies Inc." }]
+  const purchaseOrders = [{ id: "PO001", date: "2023-06-15" }];
+  const suppliers = [{ id: "SUP001", name: "Tech Supplies Inc." }];
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-8">
@@ -74,7 +103,11 @@ export default function CreateInboundShipmentPage() {
 
             <div className="space-y-2">
               <Label htmlFor="supplier">Supplier</Label>
-              <Select value={formData.supplier} onValueChange={(value) => handleChange("supplier", value)} required>
+              <Select
+                value={formData.supplier}
+                onValueChange={(value) => handleChange("supplier", value)}
+                required
+              >
                 <SelectTrigger id="supplier">
                   <SelectValue placeholder="Select supplier" />
                 </SelectTrigger>
@@ -100,7 +133,11 @@ export default function CreateInboundShipmentPage() {
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => router.push("/inbound-shipment")}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => router.push("/inbound-shipment")}
+            >
               Cancel
             </Button>
             <Button type="submit">Create Shipment</Button>
@@ -108,5 +145,5 @@ export default function CreateInboundShipmentPage() {
         </Card>
       </form>
     </div>
-  )
+  );
 }

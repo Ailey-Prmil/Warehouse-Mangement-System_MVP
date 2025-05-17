@@ -5,6 +5,7 @@ import {
   purchaseOrder,
   inboundShipmentDetail,
   purchaseOrderDetail,
+  inboundShipment,
 } from "@/../drizzle/schema";
 import { eq, sum, and } from "drizzle-orm";
 type InboundShipmentIdParams = {
@@ -132,6 +133,40 @@ export async function PUT(request: NextRequest) {
     console.error("Error updating data:", error);
     return NextResponse.json(
       { message: "Error updating data" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: InboundShipmentIdParams
+) {
+  const shipmentId = Number(params.shipmentId);
+  const body = await request.json();
+  const { shipmentTime } = body;
+
+  if (!shipmentId) {
+    return NextResponse.json(
+      { message: "Shipment ID is required" },
+      { status: 400 }
+    );
+  }
+  try {
+    await db
+      .update(inboundShipment)
+      .set({
+        shipmentTime: shipmentTime || new Date().toISOString(),
+      })
+      .where(eq(inboundShipment.shipmentId, shipmentId));
+
+    return NextResponse.json({ success: true, shipmentId }, {
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error updating shipment time:", error);
+    return NextResponse.json(
+      { message: "Error updating shipment time" },
       { status: 500 }
     );
   }

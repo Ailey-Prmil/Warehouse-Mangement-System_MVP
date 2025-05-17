@@ -13,11 +13,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Eye, Search, Trash } from "lucide-react";
+import { Eye, Search } from "lucide-react";
 
 // Define the InboundShipment type to match the database schema
 interface InboundShipment {
-  shipId: string | number; // Allow number in case shipId is numeric
+  shipmentId: string | number; // Allow number in case shipId is numeric
   shipmentTime: string | null; // Nullable as it may not be set
 }
 
@@ -48,54 +48,25 @@ export default function InboundShipmentPage() {
 
     fetchInboundShipments();
   }, []);
-
   const filteredShipments = shipments.filter((shipment) => {
     // Convert fields to strings and handle null/undefined
-    const shipId = String(shipment.shipId || "").toLowerCase();
+    const shipId = String(shipment.shipmentId || "").toLowerCase();
     const search = searchTerm.toLowerCase();
 
     return shipId.includes(search);
   });
 
-  // Handle delete shipment
-  const handleDelete = async (shipId: string | number) => {
-    if (!confirm("Are you sure you want to delete this shipment?")) return;
-
-    try {
-      const response = await fetch("/api/inbound-shipment", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ shipId }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete shipment");
-      }
-
-      // Update state to remove the deleted shipment
-      setShipments((prev) => prev.filter((s) => s.shipId !== shipId));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "An error occurred");
-    }
-  };
-
   return (
     <div className="container mx-auto py-6 pl-6">
-      <div className="mb-8 flex items-center justify-between">
+      {" "}
+      <div className="mb-8">
         <div>
           <h1 className="text-3xl font-bold">Inbound Shipments</h1>
           <p className="text-muted-foreground">
             Manage incoming shipments from suppliers
           </p>
         </div>
-        <Button asChild>
-          <Link href="/inbound-shipment/create">Create</Link>
-        </Button>
       </div>
-
       <Card className="mb-6">
         <CardHeader className="pb-3">
           <CardTitle>Search Shipments</CardTitle>
@@ -113,7 +84,6 @@ export default function InboundShipmentPage() {
           </div>
         </CardContent>
       </Card>
-
       <Card>
         <CardContent className="p-0">
           {loading ? (
@@ -138,9 +108,9 @@ export default function InboundShipmentPage() {
                   </TableRow>
                 ) : (
                   filteredShipments.map((shipment) => (
-                    <TableRow key={String(shipment.shipId)}>
+                    <TableRow key={String(shipment.shipmentId)}>
                       <TableCell className="text-center">
-                        {String(shipment.shipId)}
+                        {String(shipment.shipmentId)}
                       </TableCell>
                       <TableCell>
                         {shipment.shipmentTime ? (
@@ -148,26 +118,71 @@ export default function InboundShipmentPage() {
                         ) : (
                           <span className="text-yellow-600">Pending</span>
                         )}
-                      </TableCell>
+                      </TableCell>{" "}
                       <TableCell>
                         <div className="flex justify-center gap-2">
-                          <Button asChild size="icon" variant="ghost">
-                            <Link
-                              href={`/inbound-shipment-detail?id=${shipment.shipId}`}
+                          {" "}
+                          {shipment.shipmentTime ? (
+                            <Button asChild size="icon" variant="ghost">
+                              <Link
+                                href={`/inbound-shipment-detail?id=${shipment.shipmentId}`}
+                              >
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">View</span>
+                              </Link>
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={async () => {
+                                try {
+                                  const response = await fetch(
+                                    `/api/inbound-shipment/${shipment.shipmentId}`,
+                                    {
+                                      method: "PATCH",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify({
+                                        shipmentTime: new Date().toISOString(),
+                                      }),
+                                    }
+                                  );
+
+                                  if (!response.ok) {
+                                    throw new Error(
+                                      "Failed to confirm shipment"
+                                    );
+                                  }
+
+                                  // Update the local state
+                                  setShipments((prev) =>
+                                    prev.map((s) =>
+                                      s.shipmentId === shipment.shipmentId
+                                        ? {
+                                            ...s,
+                                            shipmentTime:
+                                              new Date().toISOString(),
+                                          }
+                                        : s
+                                    )
+                                  );
+
+                                  // Navigate to create page
+                                  window.location.href =
+                                    "/inbound-shipment/create";
+                                } catch (err) {
+                                  alert(
+                                    err instanceof Error
+                                      ? err.message
+                                      : "An error occurred"
+                                  );
+                                }
+                              }}
                             >
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">View</span>
-                            </Link>
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() => handleDelete(shipment.shipId)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                              Confirm
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
