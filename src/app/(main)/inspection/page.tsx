@@ -14,13 +14,24 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Edit, Search, Trash } from "lucide-react";
+import { Edit, Search, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Define the Inspection type to match the database schema
 interface Inspection {
   inspectId: string | number; // Allow number in case inspectId is numeric
   stockId: string | number;
-  inspectDate: string | null; // Nullable as it may not always be set
+  inspectTime: string | null; // Nullable as it may not always be set
   defectQuantity: number;
   reason: string | null; // Nullable as it’s optional
 }
@@ -30,6 +41,7 @@ export default function InspectionPage() {
   const [inspections, setInspections] = useState<Inspection[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
 
   // Fetch inspections from the API
   useEffect(() => {
@@ -66,10 +78,9 @@ export default function InspectionPage() {
       reason.includes(search)
     );
   });
-
   // Handle delete inspection
-  const handleDelete = async (inspectId: string | number) => {
-    if (!confirm("Are you sure you want to delete this inspection?")) return;
+  const handleDelete = async () => {
+    if (deleteId === null) return;
 
     try {
       const response = await fetch("/api/inspection", {
@@ -77,7 +88,7 @@ export default function InspectionPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ inspectId }),
+        body: JSON.stringify({ inspectId: deleteId }),
       });
 
       if (!response.ok) {
@@ -86,7 +97,8 @@ export default function InspectionPage() {
       }
 
       // Update state to remove the deleted inspection
-      setInspections((prev) => prev.filter((i) => i.inspectId !== inspectId));
+      setInspections((prev) => prev.filter((i) => i.inspectId !== deleteId));
+      setDeleteId(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : "An error occurred");
     }
@@ -136,7 +148,7 @@ export default function InspectionPage() {
                 <TableRow>
                   <TableHead className="text-center">Inspect ID</TableHead>
                   <TableHead>Stock ID</TableHead>
-                  <TableHead>Inspect Date</TableHead>
+                  <TableHead>Inspect Time</TableHead>
                   <TableHead>Defect Quantity</TableHead>
                   <TableHead>Reason</TableHead>
                   <TableHead className="text-center">Actions</TableHead>
@@ -156,7 +168,13 @@ export default function InspectionPage() {
                         {String(inspection.inspectId)}
                       </TableCell>
                       <TableCell>{String(inspection.stockId)}</TableCell>
-                      <TableCell>{inspection.inspectDate || "N/A"}</TableCell>
+                      <TableCell>
+                        {inspection.inspectTime
+                          ? new Date(
+                              inspection.inspectTime
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </TableCell>
                       <TableCell>
                         <Badge
                           className={
@@ -180,16 +198,42 @@ export default function InspectionPage() {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Link>
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() => handleDelete(inspection.inspectId)}
-                          >
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                          </Button>{" "}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="text-red-600 hover:text-red-800"
+                                onClick={() =>
+                                  setDeleteId(inspection.inspectId)
+                                }
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Confirm Deletion
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete this
+                                  inspection? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={handleDelete}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
