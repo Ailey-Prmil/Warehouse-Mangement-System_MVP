@@ -25,22 +25,20 @@ export default function CreateOutboundShipmentPage() {
   const [formData, setFormData] = useState({
     carrier: "",
     trackingNumber: "",
-    shipmentTime: new Date().toISOString().substring(0, 10),
   });
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (error) setError(null);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
+      // No need to include shipmentTime, it will be automatically set by the database defaultNow()
       const payload = {
-        shipmentTime: formData.shipmentTime,
         carrier: formData.carrier,
         trackingNumber: formData.trackingNumber,
       };
@@ -98,8 +96,7 @@ export default function CreateOutboundShipmentPage() {
                 required
                 disabled={isSubmitting}
               />
-            </div>
-
+            </div>{" "}
             <div className="space-y-2">
               <Label htmlFor="trackingNumber">Tracking Number</Label>
               <Input
@@ -107,18 +104,6 @@ export default function CreateOutboundShipmentPage() {
                 placeholder="Enter tracking number"
                 value={formData.trackingNumber}
                 onChange={(e) => handleChange("trackingNumber", e.target.value)}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="shipmentTime">Shipment Date</Label>
-              <Input
-                id="shipmentTime"
-                type="date"
-                value={formData.shipmentTime}
-                onChange={(e) => handleChange("shipmentTime", e.target.value)}
                 required
                 disabled={isSubmitting}
               />
