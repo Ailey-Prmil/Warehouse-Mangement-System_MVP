@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { BackButton } from "@/components/back-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -167,12 +166,11 @@ export default function CreateInspectionPage() {
 
             <div className="space-y-2">
               <Label htmlFor="reason">Reason</Label>
-              <Textarea
+              <Input
                 id="reason"
                 placeholder="Enter reason for defects"
                 value={formData.reason}
                 onChange={(e) => handleChange("reason", e.target.value)}
-                rows={4}
                 disabled={isSubmitting}
               />
             </div>

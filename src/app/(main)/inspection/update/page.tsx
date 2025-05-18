@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { BackButton } from "@/components/back-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -221,12 +220,11 @@ export default function UpdateInspectionPage() {
 
             <div className="space-y-2">
               <Label htmlFor="reason">Reason</Label>
-              <Textarea
+              <Input
                 id="reason"
                 placeholder="Enter reason for defects"
                 value={formData.reason}
                 onChange={(e) => handleChange("reason", e.target.value)}
-                rows={4}
                 disabled={isLoading || isSubmitting}
               />
             </div>
