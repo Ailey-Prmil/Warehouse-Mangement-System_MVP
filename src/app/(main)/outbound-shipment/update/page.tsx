@@ -136,7 +136,6 @@ export default function UpdateOutboundShipmentPage() {
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-8">
-      {" "}
       <div className="mb-8 w-full max-w-2xl">
         <div className="flex items-center gap-2">
           <BackButton href="/outbound-shipment" />
@@ -158,7 +157,7 @@ export default function UpdateOutboundShipmentPage() {
         <Card>
           <CardHeader>
             <CardTitle>Shipment Details</CardTitle>
-          </CardHeader>{" "}
+          </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="carrier">Carrier</Label>
@@ -195,7 +194,7 @@ export default function UpdateOutboundShipmentPage() {
                 disabled={isSubmitting || isLoading}
               />
             </div>
-          </CardContent>{" "}
+          </CardContent>
           <CardFooter className="flex justify-between">
             <Button
               variant="outline"

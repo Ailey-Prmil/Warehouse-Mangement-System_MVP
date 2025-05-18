@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -14,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash, Truck } from "lucide-react";
+import { Truck } from "lucide-react";
 import { BackButton } from "@/components/back-button";
 
 interface ShipmentDetail {
@@ -36,7 +35,6 @@ interface Shipment {
 
 export default function InboundShipmentDetailPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const shipmentId = searchParams.get("id");
 
   const [isLoading, setIsLoading] = useState(true);
@@ -91,9 +89,9 @@ export default function InboundShipmentDetailPage() {
               } catch (err) {
                 console.error("Error fetching product details:", err);
               }
-
               return {
-                detailId: detail.detailId || 0,
+                detailId:
+                  detail.detailId || Math.floor(Math.random() * 100) + 1,
                 shipmentId: Number(shipmentId),
                 productId: detail.productId,
                 productName,
@@ -122,65 +120,65 @@ export default function InboundShipmentDetailPage() {
     fetchShipmentData();
   }, [shipmentId]);
 
-  const handleDeleteDetail = async (detailId: number) => {
-    if (!shipmentId || !detailId) return;
+  // const handleDeleteDetail = async (detailId: number) => {
+  //   if (!shipmentId || !detailId) return;
 
-    if (!confirm("Are you sure you want to delete this detail?")) return;
+  //   if (!confirm("Are you sure you want to delete this detail?")) return;
 
-    try {
-      const response = await fetch(`/api/inbound-shipment-detail/${detailId}`, {
-        method: "DELETE",
-      });
+  //   try {
+  //     const response = await fetch(`/api/inbound-shipment-detail/${detailId}`, {
+  //       method: "DELETE",
+  //     });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete shipment detail");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to delete shipment detail");
+  //     }
 
-      // Update the UI by filtering out the deleted detail
-      setShipment((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          inboundShipmentDetails: prev.inboundShipmentDetails.filter(
-            (detail) => detail.detailId !== detailId
-          ),
-        };
-      });
-    } catch (err) {
-      console.error("Error deleting shipment detail:", err);
-      alert(err instanceof Error ? err.message : "An error occurred");
-    }
-  };
+  //     // Update the UI by filtering out the deleted detail
+  //     setShipment((prev) => {
+  //       if (!prev) return prev;
+  //       return {
+  //         ...prev,
+  //         inboundShipmentDetails: prev.inboundShipmentDetails.filter(
+  //           (detail) => detail.detailId !== detailId
+  //         ),
+  //       };
+  //     });
+  //   } catch (err) {
+  //     console.error("Error deleting shipment detail:", err);
+  //     alert(err instanceof Error ? err.message : "An error occurred");
+  //   }
+  // };
 
-  const handleDeleteShipment = async () => {
-    if (!shipmentId) return;
+  // const handleDeleteShipment = async () => {
+  //   if (!shipmentId) return;
 
-    if (
-      !confirm(
-        "Are you sure you want to delete this entire shipment? This action cannot be undone."
-      )
-    )
-      return;
+  //   if (
+  //     !confirm(
+  //       "Are you sure you want to delete this entire shipment? This action cannot be undone."
+  //     )
+  //   )
+  //     return;
 
-    try {
-      const response = await fetch("/api/inbound-shipment", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ shipmentId }),
-      });
+  //   try {
+  //     const response = await fetch("/api/inbound-shipment", {
+  //       method: "DELETE",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ shipmentId }),
+  //     });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete shipment");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to delete shipment");
+  //     }
 
-      router.push("/inbound-shipment");
-    } catch (err) {
-      console.error("Error deleting shipment:", err);
-      alert(err instanceof Error ? err.message : "An error occurred");
-    }
-  };
+  //     router.push("/inbound-shipment");
+  //   } catch (err) {
+  //     console.error("Error deleting shipment:", err);
+  //     alert(err instanceof Error ? err.message : "An error occurred");
+  //   }
+  // };
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
@@ -237,8 +235,8 @@ export default function InboundShipmentDetailPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      shipment.inboundShipmentDetails.map((detail) => (
-                        <TableRow key={detail.detailId}>
+                      shipment.inboundShipmentDetails.map((detail, index) => (
+                        <TableRow key={`detail-${detail.productId}-${index}`}>
                           <TableCell className="font-medium">
                             {detail.detailId}
                           </TableCell>
@@ -316,8 +314,8 @@ export default function InboundShipmentDetailPage() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      shipment.inboundShipmentDetails.map((detail) => (
-                        <TableRow key={`po-${detail.detailId}`}>
+                      shipment.inboundShipmentDetails.map((detail, index) => (
+                        <TableRow key={`po-${detail.productId}-${index}`}>
                           <TableCell>
                             {detail.poId && (
                               <Link

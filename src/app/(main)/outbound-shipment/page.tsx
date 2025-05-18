@@ -13,7 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Edit, Eye, Search, Trash2 } from "lucide-react";
+import { Edit, Search, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -140,7 +140,6 @@ export default function OutboundShipmentPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {" "}
                   <TableHead className="text-center">Shipment ID</TableHead>
                   <TableHead>Shipment Date</TableHead>
                   <TableHead>Carrier</TableHead>
@@ -185,7 +184,7 @@ export default function OutboundShipmentPage() {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Link>
-                          </Button>{" "}
+                          </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button

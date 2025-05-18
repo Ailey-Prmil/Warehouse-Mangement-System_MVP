@@ -73,7 +73,7 @@ export default function PurchaseOrderPage() {
         </CardHeader>
         <CardContent>
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />{" "}
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search by PO ID or Shipment ID..."
@@ -93,7 +93,6 @@ export default function PurchaseOrderPage() {
             <div className="p-4 text-center text-red-600">{error}</div>
           ) : (
             <Table>
-              {" "}
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-center">PO ID</TableHead>

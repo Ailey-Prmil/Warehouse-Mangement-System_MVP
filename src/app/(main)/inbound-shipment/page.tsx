@@ -118,7 +118,7 @@ export default function InboundShipmentPage() {
                         ) : (
                           <span className="text-yellow-600">Pending</span>
                         )}
-                      </TableCell>{" "}
+                      </TableCell>
                       <TableCell>
                         <div className="flex justify-center gap-2">
                           {" "}
