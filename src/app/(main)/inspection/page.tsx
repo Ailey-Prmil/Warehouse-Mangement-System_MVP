@@ -168,7 +168,7 @@ export default function InspectionPage() {
                       <TableCell className="text-center">
                         {String(inspection.inspectId)}
                       </TableCell>
-                      <TableCell>{String(inspection.stockId)}</TableCell>{" "}
+                      <TableCell>{String(inspection.stockId)}</TableCell>
                       <TableCell>
                         {formatDateForDisplay(inspection.inspectTime) || "N/A"}
                       </TableCell>
