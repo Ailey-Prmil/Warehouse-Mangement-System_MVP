@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { BackButton } from "@/components/back-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -22,7 +21,6 @@ export default function CreateCustomerOrderPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    orderDate: new Date().toISOString().substring(0, 10),
     address: "",
   });
 
@@ -40,7 +38,6 @@ export default function CreateCustomerOrderPage() {
         throw new Error("Please enter a shipping address");
       }
       const payload = {
-        orderDate: formData.orderDate,
         address: formData.address,
       };
       const response = await fetch("/api/customer-order", {
@@ -81,17 +78,8 @@ export default function CreateCustomerOrderPage() {
             <CardTitle>Order Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="orderDate">Order Date</Label>
-              <Input
-                id="orderDate"
-                type="date"
-                value={formData.orderDate}
-                onChange={(e) => handleChange("orderDate", e.target.value)}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
+            {" "}
+            {/* Order date will be automatically set to current time */}
             <div className="space-y-2">
               <Label htmlFor="address">Shipping Address</Label>
               <Input

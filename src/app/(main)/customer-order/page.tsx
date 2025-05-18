@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Search, Edit } from "lucide-react";
+import { formatDateForDisplay } from "@/lib/date-utils";
 
 // Define the CustomerOrder type to match the database schema
 interface CustomerOrder {
@@ -104,7 +105,7 @@ export default function CustomerOrderPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-center">Order ID</TableHead>
-                  <TableHead>Order Date</TableHead>
+                  <TableHead>Order Time</TableHead>
                   <TableHead>Address</TableHead>
                   <TableHead>Status</TableHead>
                   {/* <TableHead>Items</TableHead>
@@ -125,7 +126,9 @@ export default function CustomerOrderPage() {
                       <TableCell className="text-center">
                         {String(order.customerOrderId)}
                       </TableCell>
-                      <TableCell>{order.orderTime}</TableCell>
+                      <TableCell>
+                        {formatDateForDisplay(order.orderTime)}
+                      </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {order.address}
                       </TableCell>

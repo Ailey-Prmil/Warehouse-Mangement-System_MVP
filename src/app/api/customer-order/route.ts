@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import db from "@/database";
 import { customerOrder } from "@/../drizzle/schema";
 import { eq } from "drizzle-orm";
+import { formatDateForMySQL } from "@/lib/date-utils";
 
 export const revalidate = 60;
 
@@ -14,12 +15,13 @@ export async function GET() {
 }
 // when inserting data, do not use the customerOrderId, it is auto-incremented
 // status field is also automated, so it is not needed in the request body
+// orderTime is now automatically set to current time
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const { orderDate, address } = body;
+  const { address } = body;
   try {
     const newOrder = await db.insert(customerOrder).values({
-      orderTime: orderDate,
+      orderTime: formatDateForMySQL(new Date()),
       address: address,
     });
     return NextResponse.json(newOrder, { status: 201 });
@@ -32,6 +34,7 @@ export async function POST(request: NextRequest) {
   }
 }
 // only update the status of the order, not the orderId or address
+// also update the orderTime to current time when status changes
 export async function PUT(request: NextRequest) {
   const body = await request.json();
   const { orderId, newStatus } = body;
@@ -40,6 +43,7 @@ export async function PUT(request: NextRequest) {
       .update(customerOrder)
       .set({
         status: newStatus,
+        orderTime: formatDateForMySQL(new Date()),
       })
       .where(eq(customerOrder.customerOrderId, orderId));
     return NextResponse.json(updatedOrder, {
