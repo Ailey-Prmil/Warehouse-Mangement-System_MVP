@@ -52,10 +52,10 @@ export default function DashboardPage() {
     <div className="container mx-auto py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">
+        {/* <p className="text-muted-foreground">
           Welcome, <span className="font-semibold">{username}</span>! Here's an
           overview of warehouse operations.
-        </p>
+        </p> */}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

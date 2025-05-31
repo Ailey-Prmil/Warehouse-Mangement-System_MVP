@@ -17,11 +17,11 @@ export async function POST(request: NextRequest) {
   // there should be multiple values of existing PO (with or without shipID)
   // not essential
   const body = await request.json();
-  const { shipId } = body;
+  const { shipmentId } = body;
   try {
     const newPurchasingOrder = await db.insert(purchaseOrder).values({
       // po_id is auto generated
-      shipId: shipId,
+      shipmentId: shipmentId,
     });
     return NextResponse.json(newPurchasingOrder, { status: 201 });
   } catch (error) {
@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   const body = await request.json();
-  const { poId, shipId } = body;
+  const { poId, shipmentId } = body;
   try {
     const updatedOrder = await db
       .update(purchaseOrder)
       .set({
-        shipId: shipId,
+        shipmentId: shipmentId,
       })
       .where(eq(purchaseOrder.poId, poId));
     return NextResponse.json(updatedOrder, {

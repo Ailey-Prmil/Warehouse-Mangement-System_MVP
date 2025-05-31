@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   const { orderDate, address } = body;
   try {
     const newOrder = await db.insert(customerOrder).values({
-      orderDate: orderDate,
+      orderTime: orderDate,
       address: address,
     });
     return NextResponse.json(newOrder, { status: 201 });

@@ -23,11 +23,11 @@ export async function POST() {
   }
 }
 export async function DELETE(request: NextRequest) {
-  const { shipId } = await request.json();
+  const { shipmentId } = await request.json();
   try {
     const deletedInboundShipment = await db
       .delete(inboundShipment)
-      .where(eq(inboundShipment.shipId, shipId));
+      .where(eq(inboundShipment.shipmentId, shipmentId));
 
     // if (deletedInboundShipment.rowCount === 0) {
     //   return NextResponse.json(

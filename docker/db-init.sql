@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS CustomerOrder (
     -- Customize for Warehouse usage
     -- Add Shipment ID
     CustomerOrderID INT PRIMARY KEY AUTO_INCREMENT,
-    OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    OrderTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Status ENUM('Pending', 'Pick and Pack', 'Shipped') NOT NULL DEFAULT 'Pending',
     Address VARCHAR(100)
 );
@@ -58,21 +58,21 @@ CREATE TABLE IF NOT EXISTS StockTransaction (
     RefID INT,
     -- Can be PickListID or InspectID? CHECK WITH TRIGGER? -- trigger: Store + , Others -
     Quantity INT NOT NULL CHECK (Quantity > 0),
-    TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    TransactionTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE,
     FOREIGN KEY (LocID) REFERENCES LocationBin(LocID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS Inspection (
     InspectID INT PRIMARY KEY AUTO_INCREMENT,
     StockID INT NOT NULL,
-    InspectDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    InspectTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     DefectQuantity INT CHECK (DefectQuantity >= 0),
     Reason TEXT,
     FOREIGN KEY (StockID) REFERENCES Stock(StockID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS OutboundShipment (
     ShipmentID INT PRIMARY KEY AUTO_INCREMENT,
-    ShipmentDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ShipmentTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Carrier VARCHAR(100),
     TrackingNumber VARCHAR(100) UNIQUE
 );
@@ -92,15 +92,15 @@ CREATE TABLE IF NOT EXISTS OrderTransaction (
     FOREIGN KEY (CustomerOrderID) REFERENCES CustomerOrder(CustomerOrderID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS InboundShipment (
-    ShipID INT PRIMARY KEY AUTO_INCREMENT,
+    ShipmentID INT PRIMARY KEY AUTO_INCREMENT,
     ShipmentTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS InboundShipmentDetail (
     DetailID INT PRIMARY KEY AUTO_INCREMENT,
-    ShipID INT NOT NULL,
+    ShipmentID INT NOT NULL,
     ProductID INT NOT NULL,
     ReceivedQuantity INT CHECK (ReceivedQuantity >= 0),
-    FOREIGN KEY (ShipID) REFERENCES InboundShipment(ShipID) ON DELETE CASCADE,
+    FOREIGN KEY (ShipmentID) REFERENCES InboundShipment(ShipmentID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
 );
 /* CREATE TABLE IF NOT EXISTS ASN (
@@ -115,9 +115,9 @@ CREATE TABLE IF NOT EXISTS InboundShipmentDetail (
 -- Can be used to alert expected delivery time - but complex relationship
 CREATE TABLE IF NOT EXISTS PurchaseOrder (
     PO_ID INT PRIMARY KEY AUTO_INCREMENT,
-    ShipID INT NOT NULL,
+    ShipmentID INT NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (ShipID) REFERENCES InboundShipment(ShipID) ON DELETE CASCADE
+    FOREIGN KEY (ShipmentID) REFERENCES InboundShipment(ShipmentID) ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS PurchaseOrderDetail (
     PODetailID INT PRIMARY KEY AUTO_INCREMENT,
@@ -127,57 +127,69 @@ CREATE TABLE IF NOT EXISTS PurchaseOrderDetail (
     FOREIGN KEY (PO_ID) REFERENCES PurchaseOrder(PO_ID) ON DELETE CASCADE,
     FOREIGN KEY (ProductID) REFERENCES Product(ProductID) ON DELETE CASCADE
 );
--- should also check the avaiilabolity of the stock
-DELIMITER || CREATE TRIGGER AutomateStockQuantity BEFORE
-INSERT ON StockTransaction FOR EACH ROW BEGIN -- DECLARE AND ASSIGN VARIABLES
-DECLARE AvailableSpace,
-    CurrentStock INT;
-DECLARE StockQuantity INT;
-IF NEW.TransactionType = "Store" THEN -- GET FREE SPACE FROM LOCBIN
-SELECT (
-        LocationBin.Capacity - COALESCE(StockAggregation.Sum, 0)
-    ) INTO AvailableSpace
-FROM LocationBin
-    LEFT JOIN (
-        SELECT LocID,
-            SUM(Quantity) AS Sum
+
+
+-- should also check the availability of the stock
+DELIMITER ||
+CREATE TRIGGER AutomateStockQuantity BEFORE
+INSERT ON StockTransaction FOR EACH ROW
+BEGIN
+    -- DECLARE AND ASSIGN VARIABLES
+    DECLARE AvailableSpace,
+        CurrentStock INT;
+    DECLARE StockQuantity INT;
+    IF NEW.TransactionType = "Store" THEN -- GET FREE SPACE FROM LOCBIN
+        SELECT (
+                LocationBin.Capacity - COALESCE(StockAggregation.Sum, 0)
+            ) INTO AvailableSpace
+        FROM LocationBin
+            LEFT JOIN (
+                SELECT LocID,
+                    SUM(Quantity) AS Sum
+                FROM Stock
+                GROUP BY LocID
+            ) StockAggregation ON LocationBin.LocID = StockAggregation.LocID
+        WHERE LocationBin.LocID = NEW.LocID;
+        -- UPDATE THE STOCK OR SIGNAL ERROR
+        IF AvailableSpace >= NEW.Quantity THEN
+            INSERT INTO Stock (LocID, ProductID, Quantity)
+            VALUES (NEW.LocID, NEW.ProductID, NEW.Quantity) ON DUPLICATE KEY
+            UPDATE Quantity = Quantity + NEW.Quantity;
+        -- INSERT INTO StockTransaction
+        ELSE
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'There is no available space in this location';
+        END IF;
+    ELSE
+        SELECT Quantity INTO CurrentStock
         FROM Stock
-        GROUP BY LocID
-    ) StockAggregation ON LocationBin.LocID = StockAggregation.LocID
-WHERE LocationBin.LocID = NEW.LocID;
--- UPDATE THE STOCK OR SIGNAL ERROR
-IF AvailableSpace >= NEW.Quantity THEN
-INSERT INTO Stock (LocID, ProductID, Quantity)
-VALUES (NEW.LocID, NEW.ProductID, NEW.Quantity) ON DUPLICATE KEY
-UPDATE Quantity = Quantity + NEW.Quantity;
--- INSERT INTO StockTransaction
-ELSE SIGNAL SQLSTATE '45000'
-SET MESSAGE_TEXT = 'There is no available space in this location';
-END IF;
-ELSE
-SELECT Quantity INTO CurrentStock
-FROM Stock
-WHERE Stock.LocID = NEW.LocID
-    AND Stock.ProductID = NEW.ProductID;
-IF CurrentStock >= NEW.Quantity THEN
-UPDATE Stock
-SET Quantity = Quantity - new.Quantity
-WHERE LocID = NEW.LocID
-    AND ProductID = NEW.ProductID;
-SELECT Quantity INTO StockQuantity
-FROM Stock
-WHERE LocID = NEW.LocID
-    AND ProductID = NEW.ProductID;
-IF (StockQuantity = 0) THEN
-DELETE FROM Stock
-WHERE LocID = NEW.LocID
-    AND ProductID = NEW.ProductID;
-END IF;
-ELSE SIGNAL SQLSTATE '45000'
-SET MESSAGE_TEXT = 'The stock is not enough for this transaction';
-END IF;
-END IF;
-END || -- Create trigger when inserting to inspection - auto insert to stock transaction
+        WHERE Stock.LocID = NEW.LocID
+            AND Stock.ProductID = NEW.ProductID;
+    IF CurrentStock >= NEW.Quantity THEN
+        UPDATE Stock
+        SET Quantity = Quantity - new.Quantity
+        WHERE LocID = NEW.LocID
+            AND ProductID = NEW.ProductID;
+
+        SELECT Quantity INTO StockQuantity
+        FROM Stock
+        WHERE LocID = NEW.LocID
+            AND ProductID = NEW.ProductID;
+        IF (StockQuantity = 0) THEN
+            DELETE FROM Stock
+            WHERE LocID = NEW.LocID
+                AND ProductID = NEW.ProductID;
+        END IF;
+    ELSE
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'The stock is not enough for this transaction';
+    END IF;
+    END IF;
+END||
+
+
+-- Create trigger when inserting to inspection - auto insert to stock transaction
+DELIMITER ||
 CREATE TRIGGER AutomateInspectionStockTransaction
 AFTER
 INSERT ON Inspection FOR EACH ROW BEGIN
@@ -202,14 +214,25 @@ VALUES (
         NEW.InspectID,
         NEW.DefectQuantity
     );
-END || -- Create trigger to insert all details within the PO to the relevant shipment
+END||
+
+-- Create trigger to insert all details within the PO to the relevant shipment
 -- seek for different alternatives ?
 -- Duplicate key could be found (ProductID and ShipID should be the composite primary key)
 -- Complicated to carry in database -- backend instead ?
+
 -- Create trigger when inserting to customer order - auto insert to order transaction - type Receive
+DELIMITER ||
 CREATE TRIGGER AutomateCustomerOrderReceiveTransaction
 AFTER
 INSERT ON CustomerOrder FOR EACH ROW BEGIN
 INSERT INTO OrderTransaction (CustomerOrderID, TransactionType)
 VALUES (NEW.CustomerOrderID, "Receive");
 END ||
+
+DELIMITER ;
+
+DROP USER IF EXISTS 'wmsuser';
+CREATE USER 'wmsuser' IDENTIFIED BY 'wmspassword';
+GRANT ALL PRIVILEGES ON wms.* TO wmsuser WITH GRANT OPTION;
+FLUSH PRIVILEGES;

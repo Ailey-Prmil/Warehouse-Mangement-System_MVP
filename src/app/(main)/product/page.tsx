@@ -1,36 +1,63 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Eye, Search } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Eye, Search } from "lucide-react";
 
-// Reduced mock data
-const products = [
-  {
-    productId: "P001",
-    name: "Wireless Headphones",
-    sku: "WH-001",
-    unitOfMeasure: "Each",
-    createdAt: "2023-01-15",
-    updatedAt: "2023-06-20",
-    stock: 45,
-  },
-]
+// Define the Product type to match the database schema
+interface Product {
+  productId: string;
+  name: string;
+  sku: string;
+  unitOfMeasure: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function ProductPage() {
-  const [searchTerm, setSearchTerm] = useState("")
+  const [searchTerm, setSearchTerm] = useState("");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch products from the API
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/product"); // Updated to correct API endpoint
+        if (!response.ok) {
+          throw new Error("Failed to fetch products");
+        }
+        const data: Product[] = await response.json();
+        setProducts(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts = products.filter(
     (product) =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.productId.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      product.productId.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="container mx-auto py-6 pl-6">
@@ -59,57 +86,61 @@ export default function ProductPage() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Product ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead>Unit of Measure</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Updated At</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead className="text-center">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.productId}>
-                  <TableCell className="font-medium">{product.productId}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.sku}</TableCell>
-                  <TableCell>{product.unitOfMeasure}</TableCell>
-                  <TableCell>{product.createdAt}</TableCell>
-                  <TableCell>{product.updatedAt}</TableCell>
-                  <TableCell>
-                    <Badge
-                      className={
-                        product.stock > 50
-                          ? "bg-green-100 text-green-800 hover:bg-green-100"
-                          : product.stock > 20
-                            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                            : "bg-red-100 text-red-800 hover:bg-red-100"
-                      }
-                    >
-                      {product.stock}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-center">
-                      <Button asChild size="icon" variant="ghost">
-                        <Link href={`/product-detail?id=${product.productId}`}>
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
-                    </div>
-                  </TableCell>
+          {loading ? (
+            <div className="p-4 text-center">Loading...</div>
+          ) : error ? (
+            <div className="p-4 text-center text-red-600">{error}</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center">Product ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>SKU</TableHead>
+                  <TableHead>Unit of Measure</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead>Updated At</TableHead>
+                  <TableHead className="text-center">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center">
+                      No products found
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredProducts.map((product) => (
+                    <TableRow key={product.productId}>
+                      <TableCell className="text-center">
+                        {product.productId}
+                      </TableCell>
+                      <TableCell>{product.name}</TableCell>
+                      <TableCell>{product.sku}</TableCell>
+                      <TableCell>{product.unitOfMeasure}</TableCell>
+                      <TableCell>{product.createdAt}</TableCell>
+                      <TableCell>{product.updatedAt}</TableCell>
+                      <TableCell>
+                        <div className="flex justify-center">
+                          <Button asChild size="icon" variant="ghost">
+                            <Link
+                              href={`/product-detail?id=${product.productId}`}
+                            >
+                              <Eye className="h-4 w-4" />
+                              <span className="sr-only">View</span>
+                            </Link>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
