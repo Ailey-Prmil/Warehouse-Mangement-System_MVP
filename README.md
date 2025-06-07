@@ -1,70 +1,120 @@
-## 🧪 Setup Instructions
+# 📦 Smart Warehouse Management System (MVP)
 
-1. Copy `.env.example` to `.env`
+This project intends to build a modular, scalable Warehouse Management System designed to streamline inbound logistics, inventory control, and outbound operations. Built for educational and real-world warehouse scenarios, OptiWare enables efficient stock handling, order fulfillment, and real-time inventory tracking.
+---
 
-```bash
-cp .env.example .env
+### 📚 Table of Contents
+
+* [🔧 Features](#-features)
+* [📐 System Architecture](#-system-architecture)
+* [🧩 Technologies Used](#-technologies-used)
+* [📥 Installation](#-installation)
+* [🚀 Usage Guide](#-usage-guide)
+* [📊 Modules Overview](#-modules-overview)
+* [🗂️ Folder Structure](#️-folder-structure)
+* [🛠️ Future Improvements](#️-future-improvements)
+
+
+---
+
+### 🔧 Features
+
+* ✅ Inbound receiving and quality checks
+* ✅ Inventory tracking with real-time stock status
+---
+
+### 📐 System Architecture
+
+```
+Frontend, Backend (React/Next.js)
+        ↓
+Database Layer (MySQL)
+        ↓
+Dockerized Microservices (Optional for scaling)
 ```
 
-2. Run `docker-compose -f docker/docker-compose.yaml up --build`
+---
 
-If one want to remove all the data in the date base, run `docker-compose -f docker/docker-compose.yaml down -v`
+### 🧩 Technologies Used
 
-If one want to keep the data, remove the tag `-v`
+| Layer               | Tech Stack                       |
+| --------------------| -------------------------------- |
+| Frontend, Backend   | React.js / Next.js, Tailwind CSS |
+| ORM                 | Prisma                           |
+| Database            | MySQL                            |
+| Auth & RBAC         | JWT, bcrypt                      |
+| Deployment          | Docker, Docker Compose           |
+| Versioning          | Git, GitHub                      |
+
+---
+
+### 📥 Installation
+1. Clone the repository
+``` bash
+git clone https://github.com/Ailey-Prmil/Warehouse-Mangement-System_MVP.git
+cd Warehouse-Mangement-System_MVP
+```
+
+3. Set up environment variables
+`cp .env.example .env`
+Edit .env with your DB credentials
+
+4. Start services via Docker
+`docker-compose -f docker/docker-compose.yaml up --build`
+5. Start the server
+Run `npm run dev`
+> [!NOTE]
+> If one want to remove all the data in the date base, run `docker-compose -f docker/docker-compose.yaml down -v`
+> If one want to keep the data, remove the tag `-v`
 
 > This command will remove the volume of db_data for consistent data.
->
 > The database only run the init.sql file only when the volume/image first created.
 
-> [!NOTE]
->
-> 1. The wms container is removed from the compose file
-> 2. This is to allow the feature of hot reloading in the development phase. The docker mounting does not fully support this feature.
+---
 
-To set up:
+### 🚀 Usage Guide
+* Sign up new account via terminal:
+`npx tsx src\auth\scripts\generate-account.ts <username> <password>`
+* Access UI via `http://localhost:3000`
+* Login with your own username and password
+* Explore dashboards, add products, create orders, manage inventory.
 
-1. Copy `.env.example` to `.env`
+---
 
-```bash
-cp .env.example .env
-```
+### 📊 Modules Overview
 
-2. Run `docker-compose -f docker/docker-compose.yaml up --build -d`
-   > Run the container in the detached mode -- only run the database
-   > The app service has been commented
-3. Run `npm run dev`
+#### 🔹 Inbound Logistics
 
-## Getting Started
+* Supplier receiving
+* Item inspection and quality control
+* Putaway logic
 
-First, run the development server:
+#### 🔹 Inventory Management
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+* SKU creation and editing
+* Stock in/out transactions
+* Reorder level alerts
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+#### 🔹 Outbound Logistics
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+* Order creation
+* Pick list generation
+* Shipment tracking
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+#### 🔹 Admin Panel
 
-## Learn More
+* Role-based access
+* KPI dashboards
+* Activity logs
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🛠️ Future Improvements
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+* Barcode scanning integration
+* Real-time socket updates for order processing
+* Mobile app for warehouse staff
+* AI-based demand forecasting
+* API integration with ERP systems
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
