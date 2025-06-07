@@ -208,7 +208,7 @@ export default function StockTransactionPage() {
                       </TableCell>
                       <TableCell>{transaction.refId || "N/A"}</TableCell>
                       <TableCell>{transaction.quantity}</TableCell>
-                      <TableCell>{transaction.transactionDate}</TableCell>{" "}
+                      <TableCell>{transaction.transactionDate}</TableCell>
                       <TableCell>
                         <div className="flex justify-center space-x-1">
                           <Button asChild size="icon" variant="ghost">

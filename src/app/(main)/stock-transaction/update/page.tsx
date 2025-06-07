@@ -235,8 +235,9 @@ export default function UpdateStockTransactionPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
+                {" "}
                 <div className="space-y-2">
-                  <Label htmlFor="productId">Product</Label>{" "}
+                  <Label htmlFor="productId">Product</Label>
                   <Select
                     value={formData.productId}
                     onValueChange={(value) => handleChange("productId", value)}
@@ -255,12 +256,11 @@ export default function UpdateStockTransactionPage() {
                           {product.sku} - {product.name}
                         </SelectItem>
                       ))}
-                    </SelectContent>
+                    </SelectContent>{" "}
                   </Select>
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="locId">Location</Label>{" "}
+                  <Label htmlFor="locId">Location</Label>
                   <Select
                     value={formData.locId}
                     onValueChange={(value) => handleChange("locId", value)}
@@ -285,8 +285,9 @@ export default function UpdateStockTransactionPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                {" "}
                 <div className="space-y-2">
-                  <Label htmlFor="transactionType">Transaction Type</Label>{" "}
+                  <Label htmlFor="transactionType">Transaction Type</Label>
                   <Select
                     value={formData.transactionType}
                     onValueChange={(value) =>
@@ -310,7 +311,6 @@ export default function UpdateStockTransactionPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="refId">Reference ID (Optional)</Label>
                   <Input

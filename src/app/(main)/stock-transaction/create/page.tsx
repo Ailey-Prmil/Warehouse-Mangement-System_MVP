@@ -178,7 +178,7 @@ export default function CreateStockTransactionPage() {
       <form onSubmit={handleSubmit} className="w-full max-w-2xl">
         <Card>
           <CardHeader>
-            <CardTitle>Transaction Details</CardTitle>
+            <CardTitle>Transaction Details</CardTitle>{" "}
             <CardDescription>
               Enter the details for the new stock transaction
             </CardDescription>
@@ -186,7 +186,6 @@ export default function CreateStockTransactionPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                {" "}
                 <Label htmlFor="productId">Product</Label>
                 <Select
                   value={formData.productId}
@@ -211,13 +210,11 @@ export default function CreateStockTransactionPage() {
                       <SelectItem disabled value="loading">
                         Loading products...
                       </SelectItem>
-                    )}
+                    )}{" "}
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
-                {" "}
                 <Label htmlFor="locId">Location</Label>
                 <Select
                   value={formData.locId}
@@ -244,13 +241,12 @@ export default function CreateStockTransactionPage() {
                       </SelectItem>
                     )}
                   </SelectContent>
-                </Select>
+                </Select>{" "}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                {" "}
                 <Label htmlFor="transactionType">Transaction Type</Label>
                 <Select
                   value={formData.transactionType}
@@ -272,7 +268,6 @@ export default function CreateStockTransactionPage() {
                   </SelectContent>
                 </Select>
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="refId">Reference ID (Optional)</Label>
                 <Input

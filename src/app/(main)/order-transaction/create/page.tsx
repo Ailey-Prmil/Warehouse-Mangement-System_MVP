@@ -145,7 +145,8 @@ export default function CreateOrderTransactionPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="customerOrderId">Customer Order</Label>{" "}
+              {" "}
+              <Label htmlFor="customerOrderId">Customer Order</Label>
               <Select
                 value={formData.customerOrderId}
                 onValueChange={(value) =>
@@ -153,7 +154,6 @@ export default function CreateOrderTransactionPage() {
                 }
                 required
               >
-                {" "}
                 <SelectTrigger id="customerOrderId" className="bg-white">
                   <SelectValue placeholder="Select customer order" />
                 </SelectTrigger>
@@ -181,7 +181,8 @@ export default function CreateOrderTransactionPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="transactionType">Transaction Type</Label>{" "}
+              {" "}
+              <Label htmlFor="transactionType">Transaction Type</Label>
               <Select
                 value={formData.transactionType}
                 onValueChange={(value) =>
@@ -189,7 +190,6 @@ export default function CreateOrderTransactionPage() {
                 }
                 required
               >
-                {" "}
                 <SelectTrigger id="transactionType" className="bg-white">
                   <SelectValue placeholder="Select transaction type" />
                 </SelectTrigger>
@@ -199,9 +199,9 @@ export default function CreateOrderTransactionPage() {
                       {type}
                     </SelectItem>
                   ))}
-                </SelectContent>
+                </SelectContent>{" "}
               </Select>
-            </div>{" "}
+            </div>
             {/* Transaction date will be automatically set to current time */}
           </CardContent>
           <CardFooter className="flex justify-between">

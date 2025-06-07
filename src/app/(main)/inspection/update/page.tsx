@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { BackButton } from "@/components/back-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -157,7 +156,6 @@ export default function UpdateInspectionPage() {
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-8">
-      {" "}
       <div className="mb-8 w-full max-w-2xl">
         <div className="flex items-center gap-2">
           <BackButton href="/inspection" />
@@ -182,7 +180,8 @@ export default function UpdateInspectionPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="stockId">Stock</Label>{" "}
+              {" "}
+              <Label htmlFor="stockId">Stock</Label>
               <Select
                 value={formData.stockId}
                 onValueChange={(value) => handleChange("stockId", value)}
@@ -221,12 +220,11 @@ export default function UpdateInspectionPage() {
 
             <div className="space-y-2">
               <Label htmlFor="reason">Reason</Label>
-              <Textarea
+              <Input
                 id="reason"
                 placeholder="Enter reason for defects"
                 value={formData.reason}
                 onChange={(e) => handleChange("reason", e.target.value)}
-                rows={4}
                 disabled={isLoading || isSubmitting}
               />
             </div>
@@ -239,7 +237,7 @@ export default function UpdateInspectionPage() {
               disabled={isSubmitting}
             >
               Cancel
-            </Button>{" "}
+            </Button>
             <Button type="submit" disabled={isLoading || isSubmitting}>
               {isSubmitting ? "Updating..." : "Update Inspection"}
             </Button>

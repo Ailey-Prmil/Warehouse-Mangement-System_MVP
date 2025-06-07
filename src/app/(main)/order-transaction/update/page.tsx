@@ -247,7 +247,6 @@ export default function UpdateOrderTransactionPage() {
                 disabled={isLoading}
                 required
               >
-                {" "}
                 <SelectTrigger id="transactionType" className="bg-white">
                   <SelectValue placeholder="Select transaction type" />
                 </SelectTrigger>
@@ -258,8 +257,8 @@ export default function UpdateOrderTransactionPage() {
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
-            </div>{" "}
+              </Select>{" "}
+            </div>
             {/* Transaction time will be updated automatically */}
           </CardContent>
           <CardFooter className="flex justify-between">

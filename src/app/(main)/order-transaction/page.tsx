@@ -220,9 +220,9 @@ export default function OrderTransactionPage() {
                               href={`/order-transaction/update?id=${transaction.transactionId}`}
                             >
                               <Edit className="h-4 w-4" />
-                              <span className="sr-only">Edit</span>
+                              <span className="sr-only">Edit</span>{" "}
                             </Link>
-                          </Button>{" "}
+                          </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button

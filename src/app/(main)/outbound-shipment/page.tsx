@@ -13,7 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Edit, Eye, Search, Trash2 } from "lucide-react";
+import { Edit, Search, Trash2 } from "lucide-react";
+import { formatDateForDisplay } from "@/lib/date-utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -140,9 +141,8 @@ export default function OutboundShipmentPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  {" "}
                   <TableHead className="text-center">Shipment ID</TableHead>
-                  <TableHead>Shipment Date</TableHead>
+                  <TableHead>Shipment Time</TableHead>
                   <TableHead>Carrier</TableHead>
                   <TableHead>Tracking Number</TableHead>
                   <TableHead className="text-center">Actions</TableHead>
@@ -160,11 +160,9 @@ export default function OutboundShipmentPage() {
                     <TableRow key={String(shipment.shipmentId)}>
                       <TableCell className="text-center">
                         {String(shipment.shipmentId)}
-                      </TableCell>
+                      </TableCell>{" "}
                       <TableCell>
-                        {shipment.shipmentTime
-                          ? new Date(shipment.shipmentTime).toLocaleDateString()
-                          : "N/A"}
+                        {formatDateForDisplay(shipment.shipmentTime) || "N/A"}
                       </TableCell>
                       <TableCell>{shipment.carrier || "N/A"}</TableCell>
                       <TableCell>{shipment.trackingNumber || "N/A"}</TableCell>
@@ -185,7 +183,7 @@ export default function OutboundShipmentPage() {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Link>
-                          </Button>{" "}
+                          </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button

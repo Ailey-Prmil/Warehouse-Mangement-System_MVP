@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { BackButton } from "@/components/back-button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { formatDateForMySQL } from "@/lib/date-utils";
 
 export default function UpdateOutboundShipmentPage() {
   const router = useRouter();
@@ -29,7 +30,6 @@ export default function UpdateOutboundShipmentPage() {
   const [formData, setFormData] = useState({
     carrier: "",
     trackingNumber: "",
-    shipmentTime: "",
   });
 
   // Fetch shipment data when component mounts
@@ -58,17 +58,10 @@ export default function UpdateOutboundShipmentPage() {
 
         if (!matchingShipment) {
           throw new Error(`Shipment with ID ${shipmentId} not found`);
-        }
-
-        // Initialize form data with found shipment
+        } // Initialize form data with found shipment
         setFormData({
           carrier: matchingShipment.carrier || "",
           trackingNumber: matchingShipment.trackingNumber || "",
-          shipmentTime: matchingShipment.shipmentTime
-            ? new Date(matchingShipment.shipmentTime)
-                .toISOString()
-                .split("T")[0]
-            : "",
         });
 
         setIsLoading(false);
@@ -100,11 +93,12 @@ export default function UpdateOutboundShipmentPage() {
       setIsSubmitting(false);
       return;
     }
-
     try {
+      // When updating a shipment, we'll set the current date and time
       const payload = {
-        shipmentId,
-        shipmentTime: formData.shipmentTime,
+        shipmentId: Number(shipmentId),
+        // Format the current date and time for MySQL
+        shipmentTime: formatDateForMySQL(new Date()),
         carrier: formData.carrier,
         trackingNumber: formData.trackingNumber,
       };
@@ -136,7 +130,6 @@ export default function UpdateOutboundShipmentPage() {
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-8">
-      {" "}
       <div className="mb-8 w-full max-w-2xl">
         <div className="flex items-center gap-2">
           <BackButton href="/outbound-shipment" />
@@ -158,7 +151,7 @@ export default function UpdateOutboundShipmentPage() {
         <Card>
           <CardHeader>
             <CardTitle>Shipment Details</CardTitle>
-          </CardHeader>{" "}
+          </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="carrier">Carrier</Label>
@@ -170,8 +163,7 @@ export default function UpdateOutboundShipmentPage() {
                 required
                 disabled={isSubmitting || isLoading}
               />
-            </div>
-
+            </div>{" "}
             <div className="space-y-2">
               <Label htmlFor="trackingNumber">Tracking Number</Label>
               <Input
@@ -183,19 +175,7 @@ export default function UpdateOutboundShipmentPage() {
                 disabled={isSubmitting || isLoading}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="shipmentTime">Shipment Date</Label>
-              <Input
-                id="shipmentTime"
-                type="date"
-                value={formData.shipmentTime}
-                onChange={(e) => handleChange("shipmentTime", e.target.value)}
-                required
-                disabled={isSubmitting || isLoading}
-              />
-            </div>
-          </CardContent>{" "}
+          </CardContent>
           <CardFooter className="flex justify-between">
             <Button
               variant="outline"

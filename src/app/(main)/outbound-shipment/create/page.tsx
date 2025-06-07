@@ -25,22 +25,20 @@ export default function CreateOutboundShipmentPage() {
   const [formData, setFormData] = useState({
     carrier: "",
     trackingNumber: "",
-    shipmentTime: new Date().toISOString().substring(0, 10),
   });
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (error) setError(null);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
+      // No need to include shipmentTime, it will be automatically set by the database defaultNow()
       const payload = {
-        shipmentTime: formData.shipmentTime,
         carrier: formData.carrier,
         trackingNumber: formData.trackingNumber,
       };
@@ -69,7 +67,6 @@ export default function CreateOutboundShipmentPage() {
 
   return (
     <div className="container mx-auto flex flex-col items-center justify-center py-8">
-      {" "}
       <div className="mb-8 w-full max-w-2xl">
         <div className="flex items-center gap-2">
           <BackButton href="/outbound-shipment" />
@@ -87,7 +84,7 @@ export default function CreateOutboundShipmentPage() {
         <Card>
           <CardHeader>
             <CardTitle>Shipment Details</CardTitle>
-          </CardHeader>{" "}
+          </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="carrier">Carrier</Label>
@@ -99,8 +96,7 @@ export default function CreateOutboundShipmentPage() {
                 required
                 disabled={isSubmitting}
               />
-            </div>
-
+            </div>{" "}
             <div className="space-y-2">
               <Label htmlFor="trackingNumber">Tracking Number</Label>
               <Input
@@ -112,19 +108,7 @@ export default function CreateOutboundShipmentPage() {
                 disabled={isSubmitting}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="shipmentTime">Shipment Date</Label>
-              <Input
-                id="shipmentTime"
-                type="date"
-                value={formData.shipmentTime}
-                onChange={(e) => handleChange("shipmentTime", e.target.value)}
-                required
-                disabled={isSubmitting}
-              />
-            </div>
-          </CardContent>{" "}
+          </CardContent>
           <CardFooter className="flex justify-between">
             <Button
               variant="outline"

@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Edit, Search, Trash2 } from "lucide-react";
+import { formatDateForDisplay } from "@/lib/date-utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -169,11 +170,7 @@ export default function InspectionPage() {
                       </TableCell>
                       <TableCell>{String(inspection.stockId)}</TableCell>
                       <TableCell>
-                        {inspection.inspectTime
-                          ? new Date(
-                              inspection.inspectTime
-                            ).toLocaleDateString()
-                          : "N/A"}
+                        {formatDateForDisplay(inspection.inspectTime) || "N/A"}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -198,7 +195,7 @@ export default function InspectionPage() {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit</span>
                             </Link>
-                          </Button>{" "}
+                          </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button

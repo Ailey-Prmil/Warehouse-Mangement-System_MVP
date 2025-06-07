@@ -253,7 +253,7 @@ export default function PickingListPage() {
         <div>
           <h1 className="text-3xl font-bold">Picking Lists</h1>
           <p className="text-muted-foreground">
-            Manage order picking operations{" "}
+            Manage order picking operations
           </p>
         </div>
         {/* Create Dialog */}
@@ -348,7 +348,7 @@ export default function PickingListPage() {
                         >
                           {list.doneAt ? "Completed" : "Pending"}
                         </Badge>
-                      </TableCell>{" "}
+                      </TableCell>
                       <TableCell>
                         <div className="flex justify-center gap-2">
                           {!list.doneAt && (
@@ -381,7 +381,7 @@ export default function PickingListPage() {
                                     Complete Picking List
                                   </DialogTitle>
                                   <DialogDescription>
-                                    Mark picking list #{String(list.picklistId)}{" "}
+                                    Mark picking list #{String(list.picklistId)}
                                     as completed. This will record the current
                                     time as the completion time.
                                   </DialogDescription>
@@ -406,7 +406,7 @@ export default function PickingListPage() {
                                 </DialogFooter>
                               </DialogContent>
                             </Dialog>
-                          )}{" "}
+                          )}
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
