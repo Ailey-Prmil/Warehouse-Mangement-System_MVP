@@ -43,12 +43,19 @@ export async function GET(
     .where(eq(inboundShipmentDetail.shipmentId, shipmentId));
 
   inboundShipmentDetails = inboundShipmentDetails.map((detail) => {
-    const product = purchaseOrders.find(
+    const products = purchaseOrders.filter(
       (po) => po.productId === detail.productId
-    ); // Find the corresponding product in purchaseOrders
+    );
+    const totalQuantity = products.reduce(
+      (acc, cur) => acc + Number(cur.orderedQuantity),
+      0
+    );
+
+    // Find the corresponding product in purchaseOrders
+
     return {
       ...detail,
-      orderedQuantity: product ? Number(product.orderedQuantity) : 0,
+      orderedQuantity: totalQuantity,
     };
   });
 
@@ -160,9 +167,12 @@ export async function PATCH(
       })
       .where(eq(inboundShipment.shipmentId, shipmentId));
 
-    return NextResponse.json({ success: true, shipmentId }, {
-      status: 200,
-    });
+    return NextResponse.json(
+      { success: true, shipmentId },
+      {
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error("Error updating shipment time:", error);
     return NextResponse.json(
