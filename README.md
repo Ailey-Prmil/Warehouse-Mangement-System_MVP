@@ -16,9 +16,12 @@ Watch our comprehensive demo showcasing the system's key features and functional
 
 ## 📸 Screenshots
 
-*Screenshots will be added soon to showcase the user interface and key features.*
+![image](https://github.com/user-attachments/assets/20f99773-e5a3-4c35-8972-24b2f40ed69c)
+![image](https://github.com/user-attachments/assets/93dd36c7-7578-4d48-8bdb-5052354f684f)
+![image](https://github.com/user-attachments/assets/33ed8eaf-8f1e-4809-a609-858cd1fa5e3d)
+![image](https://github.com/user-attachments/assets/2efa0698-9d25-4c57-b6ab-2e8c16ef2310)
+![image](https://github.com/user-attachments/assets/6f054a53-3306-4c9a-971e-10c6372043e3)
 
-<!-- TODO: Add screenshots here -->
 
 ---
 
